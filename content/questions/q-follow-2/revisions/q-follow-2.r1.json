@@ -1,0 +1,10 @@
+{
+  "schema_version": 1,
+  "id": "q-follow-2.r1",
+  "question_id": "q-follow-2",
+  "body_path": "questions/q-follow-2/revisions/q-follow-2.r1.md",
+  "body_sha256": "b023f37f8e4efbd3fc51cb0c92f317fc7d94a7cf3bd048c6c71692f185122e9f",
+  "created_at": "2026-09-06T02:00:00+08:00",
+  "created_by": "seed:editor",
+  "change_note": "初始提问"
+}

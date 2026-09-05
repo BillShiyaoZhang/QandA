@@ -1,0 +1,35 @@
+{
+  "schema_version": 1,
+  "id": "a-follow-4",
+  "question_revision_id": "q-follow-4.r1",
+  "body_path": "answers/a-follow-4/body.md",
+  "body_sha256": "7eadd28a57f629b138c0fe34190bf182ca91d5bf246d230c82cb547ca19d480c",
+  "submitted_at": "2026-09-06T02:00:00+08:00",
+  "submitted_by": "seed:editor",
+  "provenance": {
+    "kind": "development_example",
+    "source_url": null,
+    "identity_evidence": "unknown"
+  },
+  "generation": {
+    "provider": null,
+    "channel": "development_sample",
+    "display_name": null,
+    "requested_model": null,
+    "returned_model": null,
+    "declared_version": null,
+    "generated_at": null,
+    "time_precision": "unknown",
+    "parameters": null,
+    "tools": "unknown",
+    "finish_state": "unknown"
+  },
+  "context": {
+    "snapshot_id": null,
+    "capture_kind": "unknown",
+    "visible_history_completeness": "unknown",
+    "matches_site_path": "unknown"
+  },
+  "run_id": null,
+  "is_example": true
+}

@@ -1,0 +1,16 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { url } from '../lib/view';
+---
+
+<Layout title="内容未找到"
+  ><section class="reading">
+    <div class="eyebrow">404</div><h1>这个位置还没有内容</h1><p class="muted">
+      链接可能有误，或者投稿还没有发布。已撤回的内容会保留独立占位页。
+    </p><div class="actions">
+      <a class="button primary" href={url('')}>回到问题档案</a><a
+        class="button"
+        href={url('search/')}>搜索内容</a>
+    </div>
+  </section></Layout
+>

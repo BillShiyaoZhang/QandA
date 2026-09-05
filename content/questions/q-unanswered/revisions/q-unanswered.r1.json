@@ -1,0 +1,10 @@
+{
+  "schema_version": 1,
+  "id": "q-unanswered.r1",
+  "question_id": "q-unanswered",
+  "body_path": "questions/q-unanswered/revisions/q-unanswered.r1.md",
+  "body_sha256": "f8576989a1c867dbef5f915f9fad08ac8f7c85d93cf15881b0a07c208002e895",
+  "created_at": "2026-09-06T02:00:00+08:00",
+  "created_by": "seed:editor",
+  "change_note": "初始提问"
+}

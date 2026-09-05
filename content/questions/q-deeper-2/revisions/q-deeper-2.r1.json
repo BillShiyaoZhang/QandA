@@ -1,0 +1,10 @@
+{
+  "schema_version": 1,
+  "id": "q-deeper-2.r1",
+  "question_id": "q-deeper-2",
+  "body_path": "questions/q-deeper-2/revisions/q-deeper-2.r1.md",
+  "body_sha256": "b87cbc927a42796bb63f5809542ea5e436abfc32256853fc7bbfb9e188028558",
+  "created_at": "2026-09-06T02:00:00+08:00",
+  "created_by": "seed:editor",
+  "change_note": "初始提问"
+}

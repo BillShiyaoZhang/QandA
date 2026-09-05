@@ -1,0 +1,126 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { getContent, url } from '../lib/view';
+import { published } from '../lib/content';
+const s = getContent();
+const roots = Object.values(s.questions).filter(
+  (q) => !q.parent_answer_id && published(s, 'question', q.id),
+);
+const tags = [...new Set(roots.flatMap((q) => q.tags))];
+const latest = Object.values(s.questions)
+  .filter((q) => q.parent_answer_id && published(s, 'question', q.id))
+  .sort((a,b)=>Date.parse(b.created_at)-Date.parse(a.created_at))
+  .slice(0, 5);
+---
+
+<Layout active="questions"
+  ><div class="page-heading">
+    <div>
+      <div class="eyebrow">QANDA / ARCHIVE</div><h1>问题档案</h1><p class="muted">
+        从一个问题出发，看看不同的回答，再沿着追问继续。
+      </p>
+    </div><a class="button" href={url('search/')}>搜索问题与答案 ↗</a>
+  </div>
+  <div class="archive-grid">
+    <section>
+      <div class="toolbar" aria-label="按主题筛选">
+        <button class="pill-link active" data-tag="" aria-pressed="true">全部问题</button>{
+          tags.map((tag) => (
+            <button class="pill-link" data-tag={tag} aria-pressed="false">
+              {tag}
+            </button>
+          ))
+        }
+      </div><div class="panel" id="question-list">
+        <div class="panel-heading">
+          <h2>从这里开始</h2><span class="muted small-text" id="result-count"
+            >{roots.length} 个问题</span>
+        </div>{
+          roots.map((q, i) => {
+            const revisions = Object.values(s.revisions).filter((r) => r.question_id === q.id);
+            const aids = Object.values(s.answers).filter(
+              (a) =>
+                revisions.some((r) => r.id === a.question_revision_id) &&
+                published(s, 'answer', a.id),
+            );
+            return (
+              <a
+                href={url(`questions/${q.id}/`)}
+                class="question-row"
+                data-tags={JSON.stringify(q.tags)}
+                data-pagefind-ignore
+              >
+                <div class="row-top">
+                  <>
+                    <span class="row-number">{String(i + 1).padStart(2, '0')}</span>
+                    <div class="question-body">
+                      <>
+                        <h2>{q.title}</h2>
+                        <div class="meta-line">
+                          {q.tags.map((tag) => (
+                            <span class="tag">{tag}</span>
+                          ))}
+                          <span>{aids.length ? `${aids.length} 份答案` : '等待回答'}</span>
+                          {q.is_example && <span>开发样例</span>}
+                        </div>
+                      </>
+                    </div>
+                    <span class="row-arrow">↗</span>
+                  </>
+                </div>
+              </a>
+            );
+          })
+        }<p id="no-results" class="empty" hidden>这个主题暂时没有问题。</p>
+      </div>
+    </section>
+    <aside class="archive-sidebar">
+      <div class="sidebar-card">
+        <h2>档案概况</h2><div class="stat-group">
+          <div class="stat"><strong>{roots.length}</strong><span>起始问题</span></div><div
+            class="stat"
+          >
+            <strong>{Object.keys(s.answers).length}</strong><span>答案记录</span>
+          </div>
+        </div><div class="stat-group">
+          <div class="stat">
+            <strong>{Object.values(s.questions).filter((q) => q.parent_answer_id).length}</strong
+            ><span>继续追问</span>
+          </div><div class="stat">
+            <strong>{Object.keys(s.relations).length}</strong><span>横向关联</span>
+          </div>
+        </div><p class="small-text muted">每份答案保留自己的来历，每个追问都有明确的上文。</p>
+      </div><div class="sidebar-card">
+        <h2>最近的追问</h2>{
+          latest.map((q) => (
+            <a class="recent-item" href={url(`questions/${q.id}/`)}>
+              {q.title}
+              <span>沿现有回答继续 ↗</span>
+            </a>
+          ))
+        }
+      </div><div class="notice">
+        当前内容为开发样例，展示阅读、版本和分支结构；模型来源与生成条件如实标为未知。
+      </div>
+    </aside>
+  </div></Layout
+>
+<script>
+  const rows = [...document.querySelectorAll<HTMLElement>('.question-row')];
+  for (const b of document.querySelectorAll<HTMLButtonElement>('[data-tag]'))
+    b.addEventListener('click', () => {
+      for (const t of document.querySelectorAll('[data-tag]')) {
+        t.classList.remove('active');
+        t.setAttribute('aria-pressed', 'false');
+      }
+      b.classList.add('active');
+      b.setAttribute('aria-pressed', 'true');
+      let count = 0;
+      for (const row of rows) {
+        row.hidden = !!b.dataset.tag && !JSON.parse(row.dataset.tags!).includes(b.dataset.tag);
+        if (!row.hidden) count++;
+      }
+      document.getElementById('result-count')!.textContent = `${count} 个问题`;
+      document.getElementById('no-results')!.hidden = count > 0;
+    });
+</script>

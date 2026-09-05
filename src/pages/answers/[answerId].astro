@@ -1,0 +1,199 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import Breadcrumb from '../../components/Breadcrumb.astro';
+import Relations from '../../components/Relations.astro';
+import { getContent, url, markdown, answerName, dateLabel, contextLabel } from '../../lib/view';
+import { rootId, isArchived, visibleRef, copyPath } from '../../lib/graph';
+export function getStaticPaths() {
+  return Object.values(getContent().answers).map((a) => ({
+    params: { answerId: a.id },
+    props: { a },
+  }));
+}
+const { a } = Astro.props;
+const s = getContent(),
+  r = s.revisions[a.question_revision_id],
+  q = s.questions[r.question_id],
+  root = rootId(s, q.id),
+  withdrawn = !visibleRef(s, { entity_type: 'answer', entity_id: a.id }),
+  archived = isArchived(s, q.id);
+const children = Object.values(s.questions).filter((q) => q.parent_answer_id === a.id);
+const copy = copyPath(s, q.id, r.id, a.id);
+const siblings = Object.values(s.answers).filter(
+  (x) =>
+    x.question_revision_id === r.id &&
+    x.id !== a.id &&
+    visibleRef(s, { entity_type: 'answer', entity_id: x.id }),
+);
+const notes = Object.values(s.annotations).filter((n) => n.target_id === a.id);
+const snapshot = a.context.snapshot_id ? s.contexts[a.context.snapshot_id] : null;
+---
+
+<Layout title={`${q.title} · 回答`} active="questions"
+  ><Breadcrumb s={s} questionId={q.id} revisionId={r.id} /><div class="detail-grid">
+    <div>
+      <article
+        class="reading"
+        data-pagefind-body={withdrawn ? undefined : true}
+        data-pagefind-meta="type:答案"
+      >
+        <div class="eyebrow">ANSWER / {a.id}</div><h1>{q.title}</h1><div class="notice">
+          <strong>当时的提问 · {r.id}</strong><div
+            class="prose"
+            set:html={markdown(s.bodies[r.id] || '[提问已撤回]')}
+          />
+        </div><div class="meta-line">
+          <span class="tag green">{answerName(a)}</span><span>{dateLabel(a)}</span><span
+            >{contextLabel(a)}</span>
+        </div>{
+          withdrawn ? (
+            <div class="notice warning">此答案已撤回，正文不再展示。下方仍保留从它展开的追问。</div>
+          ) : (
+            <>
+              <>
+                <p class="small-text muted" style="margin-top:12px">
+                  模型输出未逐项核验。{a.is_example ? '这是开发样例，不代表真实模型评测结果。' : ''}
+                </p>
+                <div class="prose" style="margin-top:28px" set:html={markdown(s.bodies[a.id])} />
+              </>
+            </>
+          )
+        }<div class="actions">
+          {
+            !withdrawn && !archived && (
+              <a class="button primary" href={url(`contribute/?kind=follow-up&parent=${a.id}`)}>
+                ＋ 追问这份回答
+              </a>
+            )
+          }<a class="button" href={url(`explore/${root}/?focus=${a.id}`)}>在探索树中查看</a>{
+            siblings.length > 0 && !withdrawn && (
+              <a class="button" href={url(`compare/?left=${a.id}&right=${siblings[0].id}`)}>
+                比较另一份回答
+              </a>
+            )
+          }
+        </div><details>
+          <summary>来源与已知生成条件</summary><dl class="metadata">
+            <dt>来源</dt><dd>
+              {
+                a.provenance.kind === 'development_example'
+                  ? '开发样例'
+                  : a.provenance.kind === 'community_export'
+                    ? '社区导出'
+                    : '社区粘贴'
+              }
+            </dd><dt>身份依据</dt><dd>
+              {a.provenance.identity_evidence === 'unknown' ? '未知' : '提交者声明，非平台验证'}
+            </dd><dt>提供方</dt><dd>{a.generation.provider || '未知'}</dd><dt>渠道</dt><dd>{a.generation.channel || '未知'}</dd><dt>生成协议</dt><dd>{a.generation.protocol || '未知'}</dd><dt>请求模型</dt><dd>
+              {a.generation.requested_model || '未知'}
+            </dd><dt>返回模型</dt><dd>{a.generation.returned_model || '未知'}</dd><dt>
+              实际版本
+            </dt><dd>{a.generation.declared_version || '未知'}</dd><dt>生成时间</dt><dd>
+              {dateLabel(a)}
+            </dd><dt>提交时间</dt><dd>{a.submitted_at}</dd><dt>工具使用</dt><dd>
+              {{ none: '未使用', used: '使用过', unknown: '未知' }[a.generation.tools]}
+            </dd><dt>结束状态</dt><dd>
+              {
+                { complete: '正常结束', truncated: '截断', refusal: '拒答', unknown: '未知' }[
+                  a.generation.finish_state
+                ]
+              }
+            </dd><dt>参数</dt><dd>
+              <code
+                >{a.generation.parameters ? JSON.stringify(a.generation.parameters) : '未知'}</code>
+            </dd>{
+              a.provenance.source_url && (
+                <>
+                  <>
+                    <dt>原始来源</dt>
+                    <dd>
+                      <a href={a.provenance.source_url} rel="noopener noreferrer">
+                        查看来源 ↗
+                      </a>
+                    </dd>
+                  </>
+                </>
+              )
+            }
+          </dl>
+        </details><details>
+          <summary>实际生成上下文 · {snapshot ? '提交者提供' : '未提供'}</summary>{
+            snapshot ? (
+              <pre>{snapshot.messages.map((m) => `[${m.role}]\n${m.content}`).join('\n\n')}</pre>
+            ) : (
+              <p class="small-text muted">
+                本站的分支位置不证明生成时使用了这些上文。没有材料时保持未知。
+              </p>
+            )
+          }
+        </details><div class="actions">
+          <button class="button small" data-copy-target="path-copy">复制当前路径</button>
+        </div><details id="path-copy-details">
+          <summary>查看可复制的历史路径{!copy.complete ? ' · 不完整' : ''}</summary><p
+            class="small-text muted"
+          >
+            仅包含当前路径的可见文字，不含兄弟分支、横向关联或服务方隐藏状态。
+          </p><pre id="path-copy" data-pagefind-ignore>{copy.text}</pre>
+        </details>
+      </article>
+      <section class="section">
+        <div class="section-title">
+          <h2>从这份回答继续 <span class="muted">{children.length}</span></h2>
+        </div><div class="panel">
+          {
+            children.length ? (
+              children.map((c) => (
+                <a class="question-row" href={url(`questions/${c.id}/`)}>
+                  <>
+                    <div class="meta-line">
+                      <>
+                        <span class="tag green">追问</span>
+                        <span>{c.id}</span>
+                      </>
+                    </div>
+                    <h2 style="margin-top:10px">{c.title} ↗</h2>
+                  </>
+                </a>
+              ))
+            ) : (
+              <p class="empty">还没有追问。你想沿着哪个方向继续？</p>
+            )
+          }
+        </div>
+      </section>{
+        notes.map((n) => (
+          <section class="reading section">
+            <>
+              <h2>{n.kind === 'correction' ? '更正说明' : '内容注释'}</h2>
+              <div class="prose" set:html={markdown(s.bodies[n.id])} />
+              <p class="small-text muted">
+                {n.author} · {n.scope}
+              </p>
+            </>
+          </section>
+        ))
+      }<Relations s={s} nodeIds={[a.id]} />
+    </div><aside>
+      <div class="sidebar-card">
+        <h2>本题的其他回答</h2>{
+          siblings.length ? (
+            siblings.map((b) => (
+              <a class="recent-item" href={url(`answers/${b.id}/`)}>
+                {answerName(b)}
+                <span>
+                  {b.id} · {dateLabel(b)}
+                </span>
+              </a>
+            ))
+          ) : (
+            <p class="small-text muted">目前只有这一份记录。</p>
+          )
+        }<a class="small-text" href={url(`questions/${q.id}/revisions/${r.id}/`)}>返回这版问题 →</a>
+      </div><div class="notice">追问针对这份具体答案。切换到另一份答案，会看到另一组追问。</div>{
+        archived && <div class="notice warning">本分支已归档，保留阅读，暂不接收新内容。</div>
+      }<div id="return-origin" hidden class="sidebar-card">
+        <a id="return-origin-link" href={url('')}>← 返回刚才的节点</a>
+      </div>
+    </aside>
+  </div></Layout
+>

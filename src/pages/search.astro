@@ -1,0 +1,71 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { url, getContent } from '../lib/view';
+const s = getContent();
+const roots = Object.values(s.questions).filter((q) => !q.parent_answer_id);
+---
+
+<Layout title="搜索" active="search"
+  ><div class="page-heading">
+    <div>
+      <div class="eyebrow">FIND A THREAD</div><h1>搜索问题与答案</h1><p class="muted">
+        搜索正文、问题或概念，找到可以继续的地方。
+      </p>
+    </div>
+  </div><section class="reading">
+    <div id="search" data-pagefind-path={url('pagefind/pagefind-ui.js')}></div><p
+      id="search-status"
+      class="small-text muted"
+      role="status"
+    >
+      正在加载搜索…
+    </p><noscript
+      ><p>搜索需要 JavaScript。也可以从<a href={url('')}>问题档案</a>逐题浏览。</p></noscript>
+  </section><section class="section">
+    <h2>也可以从这些问题开始</h2><div class="toolbar">
+      {
+        roots.slice(0, 6).map((q) => (
+          <a class="pill-link" href={url(`questions/${q.id}/`)}>
+            {q.title}
+          </a>
+        ))
+      }
+    </div>
+  </section></Layout
+>
+<link rel="stylesheet" href={url('pagefind/pagefind-ui.css')} />
+<script>
+  const search = document.getElementById('search')!,
+    status = document.getElementById('search-status')!;
+  const script = document.createElement('script');
+  script.src = search.dataset.pagefindPath!;
+  script.onload = () => {
+    const UI = (window as any).PagefindUI;
+    if (!UI) {
+      status.textContent = '搜索暂不可用，请从问题档案继续浏览。';
+      return;
+    }
+    new UI({
+      element: '#search',
+      showSubResults: true,
+      showImages: false,
+      translations: {
+        placeholder: '输入问题、概念或一段文字',
+        zero_results: '没有找到相关内容',
+        searching: '正在搜索…',
+      },
+    });
+    status.hidden = true;
+    const q = new URLSearchParams(location.search).get('q');
+    if (q) {
+      const input = search.querySelector('input');
+      if (input) {
+        input.value = q;
+        input.dispatchEvent(new Event('input', { bubbles: true }));
+      }
+    }
+  };
+  script.onerror = () =>
+    (status.textContent = '搜索索引尚未构建。运行完整构建后即可使用；也可以从下方问题继续浏览。');
+  document.head.append(script);
+</script>

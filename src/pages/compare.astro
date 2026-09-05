@@ -1,0 +1,195 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { url } from '../lib/view';
+---
+
+<Layout title="比较答案" active="questions" wide
+  ><div class="page-heading">
+    <div>
+      <div class="eyebrow">READ SIDE BY SIDE</div><h1>比较两份回答</h1><p class="muted">
+        先看提问和生成条件，再看答案如何不同。
+      </p>
+    </div>
+  </div><p id="compare-status" role="status" class="loading">正在读取两份答案…</p><div
+    id="compare-app"
+    data-base={url('')}
+    hidden
+  >
+    <div class="toolbar">
+      <label for="compare-mode">比较方式</label><select id="compare-mode"
+        ><option value="reading">同题阅读比较</option><option value="conditions"
+          >条件对齐比较</option
+        ></select
+      ><a class="button small" id="back-question" href={url('')}>返回问题</a>
+    </div><div id="condition-notice" class="notice"></div><div class="panel" id="conditions">
+    </div><div class="tabs mobile-compare-tabs" role="tablist" aria-label="切换答案">
+      <button
+        class="button"
+        role="tab"
+        aria-selected="true"
+        aria-controls="pane-left"
+        data-pane="left">答案 A</button
+      ><button
+        class="button"
+        role="tab"
+        aria-selected="false"
+        aria-controls="pane-right"
+        data-pane="right">答案 B</button>
+    </div><div class="compare-grid section">
+      <article class="reading compare-pane mobile-active" id="pane-left">
+        <label class="field">答案 A<select id="select-left"></select></label><div
+          id="meta-left"
+          class="meta-line"
+        >
+        </div><h2 id="title-left" class="section"></h2><div id="body-left" class="prose"></div><div
+          class="actions"
+        >
+          <a class="button small" id="open-left">打开完整记录 ↗</a>
+        </div>
+      </article><article class="reading compare-pane" id="pane-right">
+        <label class="field">答案 B<select id="select-right"></select></label><div
+          id="meta-right"
+          class="meta-line"
+        >
+        </div><h2 id="title-right" class="section"></h2><div id="body-right" class="prose">
+        </div><div class="actions"><a class="button small" id="open-right">打开完整记录 ↗</a></div>
+      </article>
+    </div>
+  </div><noscript><p>并排比较需要 JavaScript；你可以从问题页面分别打开各份回答。</p></noscript
+  ></Layout
+>
+<script>
+  import { compareConditions } from '../lib/comparison';
+  const app = document.getElementById('compare-app')!,
+    status = document.getElementById('compare-status')!,
+    base = app.dataset.base!;
+  let left: any,
+    right: any,
+    seq = 0;
+  const unknown = (value: any) =>
+    value === null || value === undefined || value === ''
+      ? '未知'
+      : typeof value === 'object'
+        ? JSON.stringify(value)
+        : String(value);
+  async function get(id: string | null) {
+    if (!id || !/^[a-zA-Z0-9._-]+$/.test(id)) throw Error('请从问题页面选择两份答案后进入比较。');
+    const r = await fetch(`${base}data/answers/${id}.json`);
+    if (!r.ok) throw Error('其中一份答案不存在，请返回问题重新选择。');
+    return r.json();
+  }
+  function conditions() {
+    const host = document.getElementById('conditions')!;
+    host.replaceChildren();
+    const rows = [
+      ['提问版本', left.revision.id, right.revision.id],
+      ['实际提问', left.revision.text, right.revision.text],
+      ['模型标识', left.name, right.name],
+      ['提供方', unknown(left.answer.generation.provider), unknown(right.answer.generation.provider)],
+      ['渠道', unknown(left.answer.generation.channel), unknown(right.answer.generation.channel)],
+      ['生成协议', unknown(left.answer.generation.protocol), unknown(right.answer.generation.protocol)],
+      ['生成时间', left.date, right.date],
+      ['上下文', left.context_label, right.context_label],
+      ['可见输入', left.snapshot?.sha256 || '未知', right.snapshot?.sha256 || '未知'],
+      ['工具', left.answer.generation.tools, right.answer.generation.tools],
+      [
+        '参数',
+        unknown(left.answer.generation.parameters),
+        unknown(right.answer.generation.parameters),
+      ],
+      [
+        '实际模型版本',
+        unknown(left.answer.generation.declared_version),
+        unknown(right.answer.generation.declared_version),
+      ],
+    ];
+    for (const [label, a, b] of rows) {
+      const row = document.createElement('div');
+      row.className = `compare-condition${a !== b ? ' different' : ''}`;
+      for (const t of [label, a, b]) {
+        const cell = document.createElement('div');
+        cell.textContent = t;
+        row.append(cell);
+      }
+      host.append(row);
+    }
+    const mode = (document.getElementById('compare-mode') as HTMLSelectElement).value;
+    const notice = document.getElementById('condition-notice')!;
+    const { aligned, reasons } = compareConditions(left,right);
+    notice.textContent =
+      left.revision.id !== right.revision.id
+        ? '这两份答案对应不同的问题修订。请先阅读上方实际提问差异。'
+        : mode === 'conditions'
+          ? aligned
+            ? '提交者声明的完整可见输入、生成协议和显式参数一致。服务方内部状态仍未知，不能视为严格等价实验。'
+            : `条件不完整或不一致，无法认定条件对齐：${reasons.join('；')}。未知项不会用默认值补齐。`
+          : '两份答案针对同一版问题。答案差异不自动证明模型版本或能力发生变化。';
+  }
+  function render(side: string, data: any) {
+    const select = document.getElementById(`select-${side}`) as HTMLSelectElement;
+    select.replaceChildren(
+      ...data.siblings.map((s: any) => {
+        const o = document.createElement('option');
+        o.value = s.id;
+        o.disabled = s.id === (side === 'left' ? right.answer.id : left.answer.id);
+        o.textContent = `${s.name} · ${s.id} · ${s.revision}`;
+        return o;
+      }),
+    );
+    select.value = data.answer.id;
+    document.getElementById(`meta-${side}`)!.textContent = `${data.name} · ${data.date}`;
+    document.getElementById(`title-${side}`)!.textContent = data.withdrawn
+      ? '答案已撤回'
+      : data.question.title;
+    document.getElementById(`body-${side}`)!.innerHTML = data.withdrawn
+      ? '<p>正文已撤回。</p>'
+      : data.html;
+    (document.getElementById(`open-${side}`) as HTMLAnchorElement).href = data.url;
+  }
+  async function load() {
+    const token = ++seq;
+    status.hidden = false;
+    status.textContent = '正在读取两份答案…';
+    const params = new URLSearchParams(location.search);
+    try {
+      const [a, b] = await Promise.all([get(params.get('left')), get(params.get('right'))]);
+      if (token !== seq) return;
+      if (a.question.id !== b.question.id)
+        throw Error('请选择同一个问题下的两份答案。跨分支内容可通过探索树阅读。');
+      if (a.answer.id === b.answer.id) throw Error('请选择两份不同的答案。');
+      left = a;
+      right = b;
+      render('left', left);
+      render('right', right);
+      conditions();
+      (document.getElementById('back-question') as HTMLAnchorElement).href =
+        `${base}questions/${left.question.id}/`;
+      status.hidden = true;
+      app.hidden = false;
+    } catch (e) {
+      status.className = 'error';
+      status.textContent = e instanceof Error ? e.message : '比较加载失败';
+      app.hidden = true;
+    }
+  }
+  for (const side of ['left', 'right'])
+    (document.getElementById(`select-${side}`) as HTMLSelectElement).addEventListener(
+      'change',
+      (e) => {
+        const u = new URL(location.href);
+        u.searchParams.set(side, (e.target as HTMLSelectElement).value);
+        history.pushState({}, '', u);
+        load();
+      },
+    );
+  document.getElementById('compare-mode')!.addEventListener('change', conditions);
+  for (const button of document.querySelectorAll<HTMLButtonElement>('[data-pane]'))
+    button.addEventListener('click', () => {
+      for (const b of document.querySelectorAll('[data-pane]'))
+        b.setAttribute('aria-selected', String(b === button));
+      for (const pane of document.querySelectorAll('.compare-pane'))
+        pane.classList.toggle('mobile-active', pane.id === `pane-${button.dataset.pane}`);
+    });
+  window.addEventListener('popstate', load);
+  load();
+</script>

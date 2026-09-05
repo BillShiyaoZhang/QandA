@@ -1,0 +1,12 @@
+{
+  "schema_version": 1,
+  "entity_type": "revision",
+  "entity_id": "q-deeper-4.r1",
+  "state": "published",
+  "reviewed_by": "seed:maintainer",
+  "reviewed_at": "2026-09-06T02:00:00+08:00",
+  "source_issue_url": null,
+  "source_updated_at": null,
+  "source_body_sha256": null,
+  "withdrawal_reason": ""
+}

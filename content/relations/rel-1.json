@@ -1,0 +1,26 @@
+{
+  "schema_version": 1,
+  "id": "rel-1",
+  "source_ref": {
+    "entity_type": "revision",
+    "entity_id": "q-001.r1",
+    "body_sha256": "258160928a4bbad99d54f6e82e4b89fbf7b5d8703cb09811cad8417a15f2dd20"
+  },
+  "target_ref": {
+    "entity_type": "revision",
+    "entity_id": "q-003.r1",
+    "body_sha256": "08c21beadb1e951e167539df5ec0dbcfe6c8b71e0ee07e0ccfc5f8d31bcfa00c"
+  },
+  "type": "related_topic",
+  "rationale": "两者都在问：一种记录会省略哪些现实信息？",
+  "source_excerpt": "",
+  "target_excerpt": "",
+  "origin": "manual",
+  "proposed_by": "seed:editor",
+  "created_at": "2026-09-06T02:00:00+08:00",
+  "method_version": null,
+  "candidate_score": null,
+  "decision": "confirmed",
+  "decided_by": "seed:maintainer",
+  "decided_at": "2026-09-06T02:00:00+08:00"
+}

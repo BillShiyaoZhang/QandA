@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "id": "q-unanswered",
+  "parent_answer_id": null,
+  "current_revision_id": "q-unanswered.r1",
+  "title": "“理解一个问题”究竟意味着什么？",
+  "tags": [
+    "理解",
+    "等待回答"
+  ],
+  "created_at": "2026-09-06T02:00:00+08:00",
+  "created_by": "seed:editor",
+  "state": "active",
+  "copied_from_question_id": null,
+  "is_example": true
+}

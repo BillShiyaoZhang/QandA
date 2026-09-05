@@ -1,0 +1,71 @@
+name: 提交已有答案
+description: 向一个明确的问题版本提交已经生成的回答。
+title: '[提交已有答案] '
+body:
+  - type: markdown
+    attributes:
+      value: 感谢贡献。此投稿会先在 GitHub 公开，维护者审核后才进入网站。来源审核不等于事实核验；未知的信息可以留空。
+  - type: input
+    id: question_revision_id
+    attributes:
+      label: 问题修订 ID
+      description: 从网站问题版本页面点击投稿可自动填入；请勿改为“最新版”。
+    validations:
+      required: true
+  - type: textarea
+    id: body
+    attributes:
+      label: 答案正文
+      description: 请保留原文。不同措辞的实际提问，请在上下文说明中写出。
+    validations:
+      required: true
+  - type: input
+    id: model_name
+    attributes:
+      label: 模型显示名称
+      description: 不知道时留空；请按界面原样填写。
+    validations:
+      required: false
+  - type: input
+    id: generated_on
+    attributes:
+      label: 生成日期
+      description: 只在知道时填写 YYYY-MM-DD；不要求精确时间。
+    validations:
+      required: false
+  - type: textarea
+    id: generation_protocol
+    attributes:
+      label: 生成规则（选填）
+      description: 如果曾统一约定系统指令、生成条件或操作步骤，可粘贴原文；不知道时留空。
+    validations:
+      required: false
+  - type: dropdown
+    id: tools
+    attributes:
+      label: 工具使用
+      options:
+        - 未知
+        - 未使用
+        - 使用过
+  - type: textarea
+    id: context_note
+    attributes:
+      label: 生成上下文说明
+      description: 可说明原始对话、记忆或联网情况。未提供的实际输入保持未知。
+    validations:
+      required: false
+  - type: input
+    id: source_url
+    attributes:
+      label: 原始分享链接
+      description: 只提交有权公开的 http(s) 链接。
+    validations:
+      required: false
+  - type: checkboxes
+    id: public_consent
+    attributes:
+      label: 公开提交确认
+      options:
+        - label: 我理解投稿会在 GitHub 公开，并允许项目保留署名、展示和必要格式整理；我有权公开这些内容，且未包含密钥或敏感信息。
+          required: true

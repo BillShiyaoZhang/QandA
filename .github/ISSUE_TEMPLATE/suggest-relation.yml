@@ -1,0 +1,58 @@
+name: 建议内容关联
+description: 提出跨问题或跨分支的连接，并说明理由。
+title: '[建议内容关联] '
+body:
+  - type: markdown
+    attributes:
+      value: 感谢贡献。此投稿会先在 GitHub 公开，维护者审核后才进入网站。来源审核不等于事实核验；未知的信息可以留空。
+  - type: input
+    id: source_id
+    attributes:
+      label: 来源节点 ID
+      description: 使用答案 ID 或问题修订 ID。
+    validations:
+      required: true
+  - type: input
+    id: target_id
+    attributes:
+      label: 目标节点 ID
+    validations:
+      required: true
+  - type: dropdown
+    id: relation_type
+    attributes:
+      label: 关联类型
+      options:
+        - 主题相关
+        - 观点支持
+        - 观点冲突
+    validations:
+      required: true
+  - type: textarea
+    id: rationale
+    attributes:
+      label: 关联理由
+      description: 支持/冲突请说明具体论点与适用条件。相似度本身不证明逻辑关系。
+    validations:
+      required: true
+  - type: textarea
+    id: source_excerpt
+    attributes:
+      label: 来源原文片段
+      description: 观点支持/冲突必需，须与原文一致。
+    validations:
+      required: false
+  - type: textarea
+    id: target_excerpt
+    attributes:
+      label: 目标原文片段
+      description: 观点支持/冲突必需，须与原文一致。
+    validations:
+      required: false
+  - type: checkboxes
+    id: public_consent
+    attributes:
+      label: 公开提交确认
+      options:
+        - label: 我理解投稿会在 GitHub 公开，并允许项目保留署名、展示和必要格式整理；我有权公开这些内容，且未包含密钥或敏感信息。
+          required: true

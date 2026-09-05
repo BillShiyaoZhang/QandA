@@ -1,0 +1,10 @@
+{
+  "schema_version": 1,
+  "id": "q-005.r1",
+  "question_id": "q-005",
+  "body_path": "questions/q-005/revisions/q-005.r1.md",
+  "body_sha256": "5f1fe4ee4e33d6ee1c565597a81ce787ed141fc929e90da8660122bc5b457f90",
+  "created_at": "2026-09-06T02:00:00+08:00",
+  "created_by": "seed:editor",
+  "change_note": "初始提问"
+}

@@ -1,0 +1,199 @@
+---
+import { getContent, url, markdown, answerName, dateLabel, contextLabel } from '../lib/view';
+import { rootId, isArchived, visibleRef } from '../lib/graph';
+import { published } from '../lib/content';
+import Breadcrumb from './Breadcrumb.astro';
+import Relations from './Relations.astro';
+interface Props {
+  questionId: string;
+  revisionId?: string;
+}
+const { questionId, revisionId } = Astro.props;
+const s = getContent();
+const q = s.questions[questionId];
+const rid = revisionId || q.current_revision_id || '';
+const r = s.revisions[rid];
+const revisions = Object.values(s.revisions).filter((r) => r.question_id === q.id);
+const answers = Object.values(s.answers).filter((a) => a.question_revision_id === rid).sort((a,b)=>Date.parse(a.submitted_at)-Date.parse(b.submitted_at));
+const visibleAnswers=answers.filter(a=>visibleRef(s,{entity_type:'answer',entity_id:a.id}));
+const withdrawn = !published(s, 'question', q.id) || !published(s, 'revision', rid);
+const archived = isArchived(s, q.id);
+const notes = Object.values(s.annotations).filter(
+  (n) => n.target_id === q.id || n.target_id === rid,
+);
+const pathRoot = rootId(s, q.id);
+---
+
+<Breadcrumb s={s} questionId={q.id} revisionId={rid || undefined} /><div class="detail-grid">
+  <div>
+    <article
+      class="reading"
+      data-pagefind-body={withdrawn ? undefined : true}
+      data-pagefind-meta="type:问题"
+    >
+      <div class="meta-line">
+        <span class="tag green">{q.parent_answer_id ? '继续追问' : '起始问题'}</span>{
+          q.is_example && <span>开发样例</span>
+        }{archived && <span class="tag">分支已归档</span>}<span>{rid}</span>
+      </div><h1 style="margin-top:18px" data-pagefind-weight="10">{q.title}</h1>{
+        withdrawn ? (
+          <div class="notice warning">此问题修订已撤回，保留位置以便理解历史路径。</div>
+        ) : (
+          <div class="prose" set:html={markdown(s.bodies[rid] || '')} />
+        )
+      }<div class="toolbar">{q.tags.map((t) => <span class="tag">{t}</span>)}</div><div
+        class="actions"
+      >
+        <a class="button" href={url(`explore/${pathRoot}/?focus=${rid || q.id}`)}>查看探索树 ↗</a>{
+          !archived && !withdrawn && (
+            <a class="button primary" href={url(`contribute/?kind=answer&revision=${rid}`)}>
+              提交本题答案
+            </a>
+          )
+        }{
+          q.parent_answer_id && (
+            <a class="button" href={url(`answers/${q.parent_answer_id}/`)}>
+              查看父答案
+            </a>
+          )
+        }
+      </div>{
+        (revisions.length > 1 || (!rid && revisions.length)) && (
+          <details open>
+            <>
+              <summary>问题修订 · {revisions.length} 版</summary>
+              <div class="toolbar">
+                {revisions.map((v) => (
+                  <a
+                    class:list={['pill-link', v.id === rid && 'active']}
+                    href={url(`questions/${q.id}/revisions/${v.id}/`)}
+                    aria-current={v.id === rid ? 'page' : undefined}
+                  >
+                    {v.id.split('.').at(-1)}
+                    {v.id === q.current_revision_id ? ' · 当前' : ''}
+                  </a>
+                ))}
+              </div>
+              <p class="small-text muted">{r?.change_note}。旧答案继续关联当时的提问版本。</p>
+            </>
+          </details>
+        )
+      }
+    </article>
+    <section class="section">
+      {answers.length > 1 && <div class="toolbar"><label for="answer-order">答案顺序</label><select id="answer-order"><option value="recorded">记录顺序</option><option value="oldest">生成时间 · 从早到晚</option><option value="newest">生成时间 · 从晚到早</option></select><span class="small-text muted">仅知日期的记录按日期分组；时间未知的排在后面</span></div>}
+      <div class="section-title">
+        <h2>这一版的回答 <span class="muted">{answers.length}</span></h2>{
+          answers.filter((a) => visibleRef(s, { entity_type: 'answer', entity_id: a.id })).length >=
+            2 && (
+            <a
+              class="button small"
+              href={url(`compare/?left=${visibleAnswers[0].id}&right=${visibleAnswers[1].id}`)}
+            >
+              比较答案 ⇄
+            </a>
+          )
+        }
+      </div><div class="panel">
+        {
+          answers.length ? (
+            answers.map((a, i) => (
+              <article class="answer-card" data-generated-at={a.generation.generated_at||''} data-time-precision={a.generation.time_precision} data-submitted-at={a.submitted_at}>
+                <>
+                  <div class="meta-line">
+                    <>
+                      <span class="tag">回答 {String(i + 1).padStart(2, '0')}</span>
+                      <span>{answerName(a)}</span>
+                      <span>{dateLabel(a)}</span>
+                    </>
+                  </div>
+                  <h3>
+                    <a href={url(`answers/${a.id}/`)}>
+                      {visibleRef(s, { entity_type: 'answer', entity_id: a.id })
+                        ? (s.bodies[a.id].split('\n').find((l) => l.trim()) || '阅读回答').replace(
+                            /^#+\s*/,
+                            '',
+                          )
+                        : '此答案已撤回'}
+                    </a>
+                  </h3>
+                  <p>
+                    {visibleRef(s, { entity_type: 'answer', entity_id: a.id })
+                      ? s.bodies[a.id]
+                          .replace(/^#+.*\n/gm, '')
+                          .replaceAll('\n', ' ')
+                          .slice(0, 160) + '…'
+                      : '保留该节点，以继续访问它后面的追问。'}
+                  </p>
+                  <div class="meta-line">
+                    <>
+                      <span>{contextLabel(a)}</span>
+                      <span>
+                        {
+                          Object.values(s.questions).filter((q) => q.parent_answer_id === a.id)
+                            .length
+                        }{' '}
+                        个追问
+                      </span>
+                      <a href={url(`answers/${a.id}/`)}>阅读全文 →</a>
+                    </>
+                  </div>
+                </>
+              </article>
+            ))
+          ) : (
+            <div class="empty">
+              <>
+                <h3>{withdrawn ? '此处保留历史位置' : '这个问题还在等待回答'}</h3>
+                <p>{withdrawn ? '可以通过问题修订或探索树继续访问历史答案及后续追问。' : '可以提交你已经生成的答案，也可以先收藏问题链接。'}</p>
+              </>
+            </div>
+          )
+        }
+      </div>
+    </section>
+    {
+      notes.map((n) => (
+        <section class="section reading">
+          <>
+            <h2>
+              {n.kind === 'comparison'
+                ? '阅读线索'
+                : n.kind === 'correction'
+                  ? '更正说明'
+                  : '内容注释'}
+            </h2>
+            <div class="prose" set:html={markdown(s.bodies[n.id])} />
+            <p class="small-text muted">
+              {n.author} · {n.created_at.slice(0, 10)}
+            </p>
+          </>
+        </section>
+      ))
+    }{rid && !withdrawn && <Relations s={s} nodeIds={[rid]} />}
+  </div><aside>
+    <div class="sidebar-card">
+      <h2>沿着问题继续</h2><p class="small-text muted">
+        本题的不同回答是平级的。每份回答下面，可以继续提出新的问题。
+      </p><a class="button small" href={url(`explore/${pathRoot}/?focus=${q.id}`)}>定位当前分支</a>
+    </div>{
+      q.is_example && (
+        <div class="notice">
+          此页为开发样例。内容用于展示功能，未记录真实模型参数，尚未逐项事实核验。
+        </div>
+      )
+    }<div class="sidebar-card">
+      <h2>记录信息</h2><dl class="metadata">
+        <dt>录入者</dt><dd>{q.created_by}</dd><dt>记录时间</dt><dd>
+          {q.created_at.slice(0, 10)}
+        </dd><dt>问题 ID</dt><dd><code>{q.id}</code></dd>
+      </dl>
+    </div>
+  </aside>
+</div>
+
+<script>
+import {compareGenerationTime} from '../lib/generation';
+const order=document.getElementById('answer-order') as HTMLSelectElement|null;
+order?.addEventListener('change',()=>{const cards=[...document.querySelectorAll<HTMLElement>('.answer-card')];cards.sort((a,b)=>{if(order.value==='recorded')return Date.parse(a.dataset.submittedAt!)-Date.parse(b.dataset.submittedAt!);return compareGenerationTime({generated_at:a.dataset.generatedAt||null,time_precision:a.dataset.timePrecision!},{generated_at:b.dataset.generatedAt||null,time_precision:b.dataset.timePrecision!},order.value as 'oldest'|'newest')});const parent=cards[0]?.parentElement;cards.forEach(c=>parent?.append(c));});
+</script>

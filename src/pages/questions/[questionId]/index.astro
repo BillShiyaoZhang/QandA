@@ -1,0 +1,14 @@
+---
+import Layout from '../../../layouts/Layout.astro';
+import QuestionView from '../../../components/QuestionView.astro';
+import { getContent } from '../../../lib/view';
+export function getStaticPaths() {
+  return Object.values(getContent().questions).map((q) => ({
+    params: { questionId: q.id },
+    props: { q },
+  }));
+}
+const { q } = Astro.props;
+---
+
+<Layout title={q.title} active="questions"><QuestionView questionId={q.id} /></Layout>
