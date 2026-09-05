@@ -204,3 +204,95 @@ test('ambiguous duplicate form labels are rejected rather than truncating output
     /歧义/,
   );
 });
+
+test('structured generation metadata and protocol survive import without invented identity evidence', async (t) => {
+  const { unknownGeneration } = await import('../src/lib/schema');
+  const f = fixture(t);
+  const generation = {
+    ...unknownGeneration(),
+    provider: 'Declared provider',
+    channel: 'web',
+    returned_model: 'declared-id',
+    protocol: 'Keep the original input; no tools.',
+    parameters: { temperature: 0 },
+    tools: 'none' as const,
+  };
+  const d = createDraft(f.root, f.drafts, source(), { ...answer(), generation });
+  reviewDraft(f.root, path.join(f.drafts, d.key + '.json'), 'reviewer', 'publish');
+  const a = Object.values(loadStore(f.root).answers).find(
+    (x) => x.submitted_by === 'github:test-contributor',
+  )!;
+  assert.deepEqual(a.generation, generation);
+  assert.equal(a.provenance.identity_evidence, 'submitter_reported');
+  assert.equal(a.context.visible_history_completeness, 'unknown');
+});
+
+test('reviewing a root question without an answer creates an independently browsable empty root', async (t) => {
+  const { publicStore, rootId } = await import('../src/lib/graph');
+  const f = fixture(t),
+    d = createDraft(f.root, f.drafts, source(), {
+      kind: 'question',
+      title: 'New root',
+      body: 'A new question?',
+      public_consent: true,
+    });
+  reviewDraft(f.root, path.join(f.drafts, d.key + '.json'), 'reviewer', 'publish');
+  const s = publicStore(loadStore(f.root)),
+    q = Object.values(s.questions).find((x) => x.title === 'New root')!;
+  assert.equal(q.parent_answer_id, null);
+  assert.equal(rootId(s, q.id), q.id);
+  assert.ok(s.bodies[q.current_revision_id!]);
+  assert.equal(
+    Object.values(s.answers).filter((a) => a.question_revision_id === q.current_revision_id).length,
+    0,
+  );
+});
+test('both answers and sibling follow-ups retain separate descendant paths after root and intermediate revisions', async (t) => {
+  const { questionPath, copyPath } = await import('../src/lib/graph');
+  const f = fixture(t);
+  let n = 20;
+  const publish = (input: unknown) => {
+    const d = createDraft(f.root, f.drafts, source(n++, JSON.stringify(input)), input);
+    reviewDraft(f.root, path.join(f.drafts, d.key + '.json'), 'reviewer', 'publish');
+    return d;
+  };
+  for (const [parent, title] of [
+    ['a-001-a', 'Branch A'],
+    ['a-001-b', 'Branch B'],
+  ])
+    publish({
+      kind: 'follow-up',
+      title,
+      parent_answer_id: parent,
+      body: title + ' question',
+      answer_body: title + ' answer',
+      public_consent: true,
+    });
+  let s = loadStore(f.root);
+  const qa = Object.values(s.questions).find((q) => q.title === 'Branch A')!,
+    qb = Object.values(s.questions).find((q) => q.title === 'Branch B')!,
+    a = Object.values(s.answers).find((a) => a.question_revision_id === qa.current_revision_id)!;
+  publish({
+    kind: 'follow-up',
+    title: 'Deeper A',
+    parent_answer_id: a.id,
+    body: 'Deeper A question',
+    public_consent: true,
+  });
+  s = loadStore(f.root);
+  const deep = Object.values(s.questions).find((q) => q.title === 'Deeper A')!,
+    before = copyPath(s, deep.id).text;
+  for (const q of [s.questions['q-001'], qa])
+    publish({
+      kind: 'revision',
+      question_id: q.id,
+      body: 'A revised question ' + q.id,
+      public_consent: true,
+    });
+  s = loadStore(f.root);
+  assert.equal(copyPath(s, deep.id).text, before);
+  assert.ok(questionPath(s, qb.id).some((node) => node.id === 'a-001-b'));
+  assert.ok(!questionPath(s, qb.id).some((node) => node.id === 'a-001-a'));
+  assert.ok(questionPath(s, deep.id).some((node) => node.id === qa.current_revision_id));
+  assert.notEqual(s.questions[qa.id].current_revision_id, qa.current_revision_id);
+});

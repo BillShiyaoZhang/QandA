@@ -49,6 +49,13 @@ body:
       description: 只在知道时填写 YYYY-MM-DD；不要求精确时间。
     validations:
       required: false
+  - type: textarea
+    id: generation_protocol
+    attributes:
+      label: 生成规则（选填）
+      description: 如果曾统一约定系统指令、生成条件或操作步骤，可粘贴原文；不知道时留空。
+    validations:
+      required: false
   - type: dropdown
     id: tools
     attributes:

@@ -134,3 +134,38 @@ test('loader rejects metadata in a misleading filename', (t) => {
   fs.renameSync(path.join(f.root, 'answers/a-001-a'), path.join(f.root, 'answers/misleading'));
   assert.throws(() => loadStore(f.root), /路径与实体/);
 });
+
+test('relation review CLI confirms or rejects candidates and leaves duplicate decisions immutable', async (t) => {
+  const { suggestRelations, candidateRelation } = await import('../src/lib/relations');
+  const f = fixture(t),
+    s = loadStore(f.root),
+    candidates = suggestRelations(s, { minScore: 0.03 }).slice(0, 2).map(candidateRelation);
+  assert.equal(candidates.length, 2);
+  const run = (file: string, choice: string) =>
+    execFileSync(
+      process.execPath,
+      [
+        '--import',
+        'tsx',
+        'scripts/review-relation.ts',
+        '--candidate',
+        file,
+        '--reviewer',
+        'test',
+        '--reason',
+        'Reviewed shared concept',
+        choice,
+      ],
+      { env: { ...process.env, CONTENT_DIR: f.root }, stdio: 'pipe' },
+    );
+  for (const [i, r] of candidates.entries()) {
+    const file = path.join(f.dir, r.id + '.json');
+    fs.writeFileSync(file, JSON.stringify(r));
+    run(file, i ? '--reject' : '--confirm');
+    assert.throws(() => run(file, '--confirm'), /已作决定/);
+  }
+  const next = loadStore(f.root);
+  validateStore(next, s);
+  assert.ok(publicStore(next).relations[candidates[0].id]);
+  assert.equal(publicStore(next).relations[candidates[1].id], undefined);
+});

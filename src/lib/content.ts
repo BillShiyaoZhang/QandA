@@ -250,6 +250,7 @@ export function validateStore(s: Store, baseline?: Store): void {
     check(entity(s, n.target_type, n.target_id), `注释目标不存在: ${n.id}`);
   const keys = new Set<string>();
   for (const r of Object.values(s.relations)) {
+    check(Boolean(r.rationale.trim()), `关联理由不能为空白: ${r.id}`);
     checkRef(r.source_ref, r.id);
     checkRef(r.target_ref, r.id);
     check(r.source_ref.entity_id !== r.target_ref.entity_id, `不允许自关联: ${r.id}`);

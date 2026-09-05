@@ -59,6 +59,7 @@ import { url } from '../lib/view';
   ></Layout
 >
 <script>
+  import { compareConditions } from '../lib/comparison';
   const app = document.getElementById('compare-app')!,
     status = document.getElementById('compare-status')!,
     base = app.dataset.base!;
@@ -84,6 +85,9 @@ import { url } from '../lib/view';
       ['提问版本', left.revision.id, right.revision.id],
       ['实际提问', left.revision.text, right.revision.text],
       ['模型标识', left.name, right.name],
+      ['提供方', unknown(left.answer.generation.provider), unknown(right.answer.generation.provider)],
+      ['渠道', unknown(left.answer.generation.channel), unknown(right.answer.generation.channel)],
+      ['生成协议', unknown(left.answer.generation.protocol), unknown(right.answer.generation.protocol)],
       ['生成时间', left.date, right.date],
       ['上下文', left.context_label, right.context_label],
       ['可见输入', left.snapshot?.sha256 || '未知', right.snapshot?.sha256 || '未知'],
@@ -111,23 +115,14 @@ import { url } from '../lib/view';
     }
     const mode = (document.getElementById('compare-mode') as HTMLSelectElement).value;
     const notice = document.getElementById('condition-notice')!;
-    const sameInput = left.snapshot?.sha256 && left.snapshot.sha256 === right.snapshot?.sha256;
-    const aligned =
-      sameInput &&
-      left.revision.id === right.revision.id &&
-      left.answer.generation.parameters !== null &&
-      right.answer.generation.parameters !== null &&
-      JSON.stringify(left.answer.generation.parameters) ===
-        JSON.stringify(right.answer.generation.parameters) &&
-      left.answer.generation.tools !== 'unknown' &&
-      left.answer.generation.tools === right.answer.generation.tools;
+    const { aligned, reasons } = compareConditions(left,right);
     notice.textContent =
       left.revision.id !== right.revision.id
         ? '这两份答案对应不同的问题修订。请先阅读上方实际提问差异。'
         : mode === 'conditions'
           ? aligned
-            ? '已记录的可见输入和显式参数一致。服务方内部状态仍未知，不能视为严格等价实验。'
-            : '条件不完整或不一致，无法认定条件对齐。未知项不会用默认值补齐。'
+            ? '提交者声明的完整可见输入、生成协议和显式参数一致。服务方内部状态仍未知，不能视为严格等价实验。'
+            : `条件不完整或不一致，无法认定条件对齐：${reasons.join('；')}。未知项不会用默认值补齐。`
           : '两份答案针对同一版问题。答案差异不自动证明模型版本或能力发生变化。';
   }
   function render(side: string, data: any) {

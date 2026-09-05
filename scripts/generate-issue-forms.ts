@@ -15,6 +15,12 @@ const input = (id: string, label: string, required = false, description?: string
 const metadata = [
   input('model_name', '模型显示名称', false, '不知道时留空；请按界面原样填写。'),
   input('generated_on', '生成日期', false, '只在知道时填写 YYYY-MM-DD；不要求精确时间。'),
+  text(
+    'generation_protocol',
+    '生成规则（选填）',
+    false,
+    '如果曾统一约定系统指令、生成条件或操作步骤，可粘贴原文；不知道时留空。',
+  ),
   {
     type: 'dropdown',
     id: 'tools',

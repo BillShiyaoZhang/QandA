@@ -14,7 +14,7 @@ const q = s.questions[questionId];
 const rid = revisionId || q.current_revision_id || '';
 const r = s.revisions[rid];
 const revisions = Object.values(s.revisions).filter((r) => r.question_id === q.id);
-const answers = Object.values(s.answers).filter((a) => a.question_revision_id === rid).sort((a,b)=>a.submitted_at.localeCompare(b.submitted_at));
+const answers = Object.values(s.answers).filter((a) => a.question_revision_id === rid).sort((a,b)=>Date.parse(a.submitted_at)-Date.parse(b.submitted_at));
 const visibleAnswers=answers.filter(a=>visibleRef(s,{entity_type:'answer',entity_id:a.id}));
 const withdrawn = !published(s, 'question', q.id) || !published(s, 'revision', rid);
 const archived = isArchived(s, q.id);
@@ -81,7 +81,7 @@ const pathRoot = rootId(s, q.id);
       }
     </article>
     <section class="section">
-      {answers.length > 1 && <div class="toolbar"><label for="answer-order">答案顺序</label><select id="answer-order"><option value="recorded">记录顺序</option><option value="oldest">生成时间 · 从早到晚</option><option value="newest">生成时间 · 从晚到早</option></select><span class="small-text muted">生成时间未知的记录单独排在后面</span></div>}
+      {answers.length > 1 && <div class="toolbar"><label for="answer-order">答案顺序</label><select id="answer-order"><option value="recorded">记录顺序</option><option value="oldest">生成时间 · 从早到晚</option><option value="newest">生成时间 · 从晚到早</option></select><span class="small-text muted">仅知日期的记录按日期分组；时间未知的排在后面</span></div>}
       <div class="section-title">
         <h2>这一版的回答 <span class="muted">{answers.length}</span></h2>{
           answers.filter((a) => visibleRef(s, { entity_type: 'answer', entity_id: a.id })).length >=
@@ -98,7 +98,7 @@ const pathRoot = rootId(s, q.id);
         {
           answers.length ? (
             answers.map((a, i) => (
-              <article class="answer-card" data-generated-at={a.generation.generated_at||''} data-submitted-at={a.submitted_at}>
+              <article class="answer-card" data-generated-at={a.generation.generated_at||''} data-time-precision={a.generation.time_precision} data-submitted-at={a.submitted_at}>
                 <>
                   <div class="meta-line">
                     <>
@@ -193,6 +193,7 @@ const pathRoot = rootId(s, q.id);
 </div>
 
 <script>
+import {compareGenerationTime} from '../lib/generation';
 const order=document.getElementById('answer-order') as HTMLSelectElement|null;
-order?.addEventListener('change',()=>{const cards=[...document.querySelectorAll<HTMLElement>('.answer-card')];cards.sort((a,b)=>{if(order.value==='recorded')return a.dataset.submittedAt!.localeCompare(b.dataset.submittedAt!);const x=a.dataset.generatedAt,y=b.dataset.generatedAt;if(!x||!y)return x?-1:y?1:0;return order.value==='oldest'?x.localeCompare(y):y.localeCompare(x)});const parent=cards[0]?.parentElement;cards.forEach(c=>parent?.append(c));});
+order?.addEventListener('change',()=>{const cards=[...document.querySelectorAll<HTMLElement>('.answer-card')];cards.sort((a,b)=>{if(order.value==='recorded')return Date.parse(a.dataset.submittedAt!)-Date.parse(b.dataset.submittedAt!);return compareGenerationTime({generated_at:a.dataset.generatedAt||null,time_precision:a.dataset.timePrecision!},{generated_at:b.dataset.generatedAt||null,time_precision:b.dataset.timePrecision!},order.value as 'oldest'|'newest')});const parent=cards[0]?.parentElement;cards.forEach(c=>parent?.append(c));});
 </script>

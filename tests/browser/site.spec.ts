@@ -128,3 +128,10 @@ test('ordinary reading remains usable without JavaScript', async ({ browser }) =
   await expect(page.locator('.prose').first()).toBeVisible();
   await context.close();
 });
+
+test('comparison distinguishes complete protocol evidence from equal partial transcripts',async({page})=>{
+ let complete=false;
+ await page.route('**/data/answers/*.json',async route=>{const response=await route.fetch();const data=await response.json();data.answer.generation.protocol='Test-only recorded rules';data.answer.generation.parameters={temperature:0};data.answer.generation.tools='none';data.answer.context.visible_history_completeness=complete?'complete':'partial';data.context_label=complete?'提交者提供完整可见历史':'只提供部分上下文';data.snapshot={id:'test-only-context',sha256:'test-only',messages:[{role:'user',content:data.revision.text}],path_refs:[],attachments:[]};await route.fulfill({response,json:data});});
+ await page.goto(goto('compare/?left=a-001-a&right=a-001-b'));await expect(page.locator('#compare-app')).toBeVisible();await page.getByLabel('比较方式').selectOption('conditions');await expect(page.locator('#condition-notice')).toContainText('可见历史未声明完整');
+ complete=true;await page.reload();await expect(page.locator('#compare-app')).toBeVisible();await page.getByLabel('比较方式').selectOption('conditions');await expect(page.locator('#condition-notice')).toContainText('提交者声明的完整可见输入、生成协议和显式参数一致');await expect(page.locator('#conditions')).toContainText('提供方');
+});

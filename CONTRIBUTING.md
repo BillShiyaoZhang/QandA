@@ -52,6 +52,8 @@ npm run review -- --draft .local/submissions/ACTUAL_KEY.json --reviewer YOUR_NAM
 
 注释使用 `kind: "annotation"`、`target_id`、`annotation_kind`、`body` 和可选 `evidence_urls`。支持 `note`、`correction`、`comparison`、`fact_check`；这些类型表达注释用途，不意味着自动事实核验。答案支持 `context_messages`、`context_path_ids`、`context_completeness`，只记录实际提供的文本；看不到的历史保持未知。完整字段由 `src/lib/submissions.ts` 中的 `submissionSchema` 定义。
 
+生成规则可以通过表单「生成规则（选填）」或 `generation_protocol` 原样提交。维护者也可通过文件的完整 `generation` 对象导入已知的供应商、渠道、请求/返回模型、时间精度、协议、参数、工具及结束状态；结构见 `generationSchema`，未知字段为 `null` 或对应未知枚举。它仍属于提交者声明，不会升级成平台捕获。若与简要模型名称、日期或规则冲突，导入器要求先核对，不会静默覆盖。
+
 
 ## 关联确认
 

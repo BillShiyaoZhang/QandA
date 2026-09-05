@@ -9,7 +9,7 @@ const roots = Object.values(s.questions).filter(
 const tags = [...new Set(roots.flatMap((q) => q.tags))];
 const latest = Object.values(s.questions)
   .filter((q) => q.parent_answer_id && published(s, 'question', q.id))
-  .sort((a,b)=>b.created_at.localeCompare(a.created_at))
+  .sort((a,b)=>Date.parse(b.created_at)-Date.parse(a.created_at))
   .slice(0, 5);
 ---
 

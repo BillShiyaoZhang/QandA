@@ -42,3 +42,34 @@ test('known and rejected same-version relations are not repeatedly suggested', (
     ),
   );
 });
+
+test('support and conflict decisions require actual excerpts and a nonblank rationale', async () => {
+  const { validateStore, publication } = await import('../src/lib/content');
+  const { relationSchema } = await import('../src/lib/schema');
+  const { publicStore } = await import('../src/lib/graph');
+  for (const type of ['supports', 'conflicts_with'] as const) {
+    const s = loadStore(),
+      a = s.answers['a-001-a'],
+      b = s.answers['a-001-b'];
+    const r = {
+      ...structuredClone(s.relations['rel-1']),
+      id: 'test-' + type,
+      type,
+      source_ref: { entity_type: 'answer' as const, entity_id: a.id, body_sha256: a.body_sha256 },
+      target_ref: { entity_type: 'answer' as const, entity_id: b.id, body_sha256: b.body_sha256 },
+      source_excerpt: s.bodies[a.id].slice(0, 20),
+      target_excerpt: s.bodies[b.id].slice(0, 20),
+      rationale: 'Test annotation about these two quoted claims.',
+    };
+    s.relations[r.id] = r;
+    s.publications['relation:' + r.id] = publication('relation', r.id);
+    validateStore(s);
+    assert.ok(publicStore(s).relations[r.id]);
+    r.rationale = '   ';
+    assert.equal(relationSchema.safeParse(r).success, false);
+    assert.throws(() => validateStore(s), /理由不能为空白/);
+    r.rationale = 'A reason';
+    r.target_excerpt = 'an excerpt absent from the answer';
+    assert.throws(() => validateStore(s), /片段不存在/);
+  }
+});

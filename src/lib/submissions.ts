@@ -12,7 +12,13 @@ import {
   published,
   status,
 } from './content';
-import { unknownGeneration, type Store, type Answer, type Publication } from './schema';
+import {
+  generationSchema,
+  unknownGeneration,
+  type Store,
+  type Answer,
+  type Publication,
+} from './schema';
 import { isArchived, answerQuestion, visibleRef } from './graph';
 
 const optional = z.string().nullable().optional();
@@ -27,6 +33,8 @@ export const submissionSchema = z
     question_id: optional,
     tags: z.array(z.string()).default([]),
     model_name: optional,
+    generation: generationSchema.optional(),
+    generation_protocol: optional,
     generated_on: optional,
     tools: z.enum(['none', 'used', 'unknown']).default('unknown'),
     context_note: optional,
@@ -184,6 +192,28 @@ export function prepareFiles(
       });
       publish('context', snapshot);
     }
+    if (sub.generation && sub.model_name && sub.model_name !== sub.generation.display_name)
+      throw new Error('模型显示名称与详细生成记录不一致');
+    if (
+      sub.generation &&
+      sub.generated_on &&
+      sub.generated_on !== sub.generation.generated_at?.slice(0, 10)
+    )
+      throw new Error('生成日期与详细生成记录不一致');
+    if (
+      sub.generation &&
+      sub.generation_protocol &&
+      sub.generation_protocol !== sub.generation.protocol
+    )
+      throw new Error('生成规则与详细生成记录不一致');
+    const generation = sub.generation || {
+      ...unknownGeneration(),
+      display_name: sub.model_name || null,
+      generated_at: sub.generated_on || null,
+      time_precision: sub.generated_on ? ('day' as const) : ('unknown' as const),
+      tools: sub.tools,
+      protocol: sub.generation_protocol || null,
+    };
     const a: Answer = {
       schema_version: 1,
       id,
@@ -195,15 +225,12 @@ export function prepareFiles(
       provenance: {
         kind: 'community_paste',
         source_url: sub.source_url || null,
-        identity_evidence: sub.model_name ? 'submitter_reported' : 'unknown',
+        identity_evidence:
+          generation.display_name || generation.requested_model || generation.returned_model
+            ? 'submitter_reported'
+            : 'unknown',
       },
-      generation: {
-        ...unknownGeneration(),
-        display_name: sub.model_name || null,
-        generated_at: sub.generated_on || null,
-        time_precision: sub.generated_on ? 'day' : 'unknown',
-        tools: sub.tools,
-      },
+      generation,
       context: {
         snapshot_id: snapshot,
         capture_kind: snapshot ? 'submitter_transcript' : 'unknown',
@@ -555,6 +582,7 @@ const issueLabels = [
   '答案正文',
   '模型显示名称',
   '生成日期',
+  '生成规则（选填）',
   '工具使用',
   '生成上下文说明',
   '原始分享链接',
@@ -612,6 +640,7 @@ export function issueSubmission(body: string, kind: Submission['kind']): unknown
       .filter(Boolean),
     model_name: f['模型显示名称'] || null,
     generated_on: f['生成日期'] || null,
+    generation_protocol: f['生成规则（选填）'] || null,
     tools:
       ({ 未使用: 'none', 使用过: 'used' } as Record<string, string>)[f['工具使用']] || 'unknown',
     context_note: f['生成上下文说明'] || null,

@@ -84,7 +84,7 @@ const snapshot = a.context.snapshot_id ? s.contexts[a.context.snapshot_id] : nul
               }
             </dd><dt>身份依据</dt><dd>
               {a.provenance.identity_evidence === 'unknown' ? '未知' : '提交者声明，非平台验证'}
-            </dd><dt>提供方</dt><dd>{a.generation.provider || '未知'}</dd><dt>请求模型</dt><dd>
+            </dd><dt>提供方</dt><dd>{a.generation.provider || '未知'}</dd><dt>渠道</dt><dd>{a.generation.channel || '未知'}</dd><dt>生成协议</dt><dd>{a.generation.protocol || '未知'}</dd><dt>请求模型</dt><dd>
               {a.generation.requested_model || '未知'}
             </dd><dt>返回模型</dt><dd>{a.generation.returned_model || '未知'}</dd><dt>
               实际版本
