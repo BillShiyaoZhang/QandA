@@ -1,0 +1,10 @@
+{
+  "schema_version": 1,
+  "id": "q-006.r2",
+  "question_id": "q-006",
+  "body_path": "questions/q-006/revisions/q-006.r2.md",
+  "body_sha256": "32a46ce564100b5e239fa573cb6d3ca6d8939b493026abb3749a8f1f3a89d09e",
+  "created_at": "2026-09-06T02:00:00+08:00",
+  "created_by": "seed:editor",
+  "change_note": "限定其他已知条件，保留初版及其回答"
+}

@@ -1,0 +1,9 @@
+node_modules
+dist
+.astro
+.local
+content
+package-lock.json
+
+# Astro formatter under investigation: preserve authored markup.
+**/*.astro

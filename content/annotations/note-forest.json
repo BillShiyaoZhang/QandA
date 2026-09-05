@@ -1,0 +1,13 @@
+{
+  "schema_version": 1,
+  "id": "note-forest",
+  "target_type": "question",
+  "target_id": "q-001",
+  "kind": "comparison",
+  "body_path": "annotations/note-forest.md",
+  "body_sha256": "f60de3badb0cede61948432815bbd17b537d80389d9ba06ede9d99721db59ab5",
+  "author": "seed:editor",
+  "created_at": "2026-09-06T02:00:00+08:00",
+  "evidence_urls": [],
+  "scope": "阅读两份开发样例"
+}

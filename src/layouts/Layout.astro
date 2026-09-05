@@ -1,0 +1,78 @@
+---
+import '../styles/global.css';
+import { url, github, buildRevision } from '../lib/view';
+interface Props {
+  title?: string;
+  description?: string;
+  active?: string;
+  wide?: boolean;
+}
+const {
+  title = '问题档案',
+  description = '保存问题、不同的答案，以及不断展开的探索路径。',
+  active = '',
+  wide = false,
+} = Astro.props;
+---
+
+<!doctype html>
+<html lang="zh-CN">
+  <head
+    ><meta charset="UTF-8" /><meta
+      name="viewport"
+      content="width=device-width, initial-scale=1"
+    /><meta name="description" content={description} /><meta
+      name="theme-color"
+      content="#173b45"
+    /><title>{title} · QandA</title><link
+      rel="icon"
+      href={url('favicon.svg')}
+      type="image/svg+xml"
+    /><meta property="og:title" content={`${title} · QandA`} /><meta
+      property="og:description"
+      content={description}
+    /></head
+  >
+  <body
+    ><a class="skip" href="#main">跳到内容</a>
+    <header class="site-header">
+      <div class="header-inner">
+        <a class="wordmark" href={url('')} aria-label="QandA 首页"
+          ><span class="brand-symbol">Q<span>↗</span></span><span>QandA</span></a
+        ><nav aria-label="主导航">
+          <a class:list={[active === 'questions' && 'active']} href={url('')}>问题档案</a><a
+            class:list={[active === 'search' && 'active']}
+            href={url('search/')}>搜索</a
+          ><a class:list={[active === 'contribute' && 'active']} href={url('contribute/')}
+            >参与贡献</a>
+        </nav><a class="button small primary" href={url('contribute/?kind=question')}
+          >＋ 提个新问题</a>
+      </div>
+    </header>
+    <main id="main" class:list={['main', wide && 'wide']}><slot /></main>
+    <footer class="site-footer">
+      <a href={github}>GitHub 项目 ↗</a><span
+        >内容版本 {buildRevision()} · 构建 <time datetime={__BUILD_TIME__}
+          >{__BUILD_TIME__.slice(0, 10)}</time
+        ></span
+      ><a href={url('contribute/#rules')}>投稿与内容说明</a>
+    </footer>
+    <script>
+const from=new URLSearchParams(location.search).get('from');
+if(from&&/^[a-zA-Z0-9._-]+$/.test(from)){fetch(`${import.meta.env.BASE_URL}data/nodes/${from}.json`).then(r=>r.ok?r.json():null).then(data=>{if(!data?.url)return;const nav=document.createElement('nav');nav.className='notice small-text';nav.setAttribute('aria-label','关联跳转来源');const a=document.createElement('a');a.href=data.url;a.textContent='← 返回刚才的节点';nav.append(a);document.getElementById('main')!.prepend(nav);}).catch(()=>{});}
+
+      for (const button of document.querySelectorAll<HTMLButtonElement>('[data-copy-target]'))
+        button.addEventListener('click', async () => {
+          const target = document.getElementById(button.dataset.copyTarget!);
+          if (!target) return;
+          try {
+            await navigator.clipboard.writeText(target.textContent || '');
+            button.textContent = '已复制';
+          } catch {
+            button.textContent = '请展开下方文本，手动复制';
+            (target.closest('details') as HTMLDetailsElement | null)?.setAttribute('open', '');
+          }
+        });
+    </script>
+  </body>
+</html>

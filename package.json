@@ -1,0 +1,46 @@
+{
+  "name": "qanda",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "scripts": {
+    "dev": "astro dev --host 127.0.0.1",
+    "build": "npm run validate && astro build && pagefind --site dist",
+    "preview": "astro preview --host 127.0.0.1",
+    "check": "astro check",
+    "validate": "node --import tsx scripts/validate-content.ts",
+    "test": "node --import tsx --test tests/*.test.ts",
+    "test:e2e": "playwright test",
+    "seed": "node --import tsx scripts/seed-content.ts",
+    "import": "node --import tsx scripts/import-submission.ts",
+    "review": "node --import tsx scripts/review-submission.ts",
+    "relations": "node --import tsx scripts/suggest-relations.ts",
+    "benchmark": "node --import tsx scripts/benchmark.ts",
+    "manage": "node --import tsx scripts/manage-content.ts",
+    "relation:review": "node --import tsx scripts/review-relation.ts",
+    "indexes": "node --import tsx scripts/build-indexes.ts",
+    "format": "prettier --write src scripts tests .github astro.config.mjs playwright.config.ts package.json tsconfig.json",
+    "verify:export": "node --import tsx scripts/verify-public-export.ts"
+  },
+  "dependencies": {
+    "astro": "7.3.1",
+    "marked": "18.0.11",
+    "pagefind": "1.5.2",
+    "sanitize-html": "2.17.7",
+    "zod": "4.5.4"
+  },
+  "devDependencies": {
+    "@astrojs/check": "0.9.10",
+    "@playwright/test": "1.63.0",
+    "@types/node": "26.4.1",
+    "@types/sanitize-html": "2.16.1",
+    "prettier": "3.9.6",
+    "prettier-plugin-astro": "0.14.1",
+    "tsx": "4.23.13",
+    "typescript": "6.0.3",
+    "yaml": "2.9.0"
+  }
+}

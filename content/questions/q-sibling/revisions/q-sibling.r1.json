@@ -1,0 +1,10 @@
+{
+  "schema_version": 1,
+  "id": "q-sibling.r1",
+  "question_id": "q-sibling",
+  "body_path": "questions/q-sibling/revisions/q-sibling.r1.md",
+  "body_sha256": "8e9e7174f660e8085116363de3cf948fc31eabaefcc76f356a2cbabbd2181343",
+  "created_at": "2026-09-06T02:00:00+08:00",
+  "created_by": "seed:editor",
+  "change_note": "初始提问"
+}

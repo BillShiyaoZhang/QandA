@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "id": "q-deeper-4",
+  "parent_answer_id": "a-follow-4",
+  "current_revision_id": "q-deeper-4.r1",
+  "title": "每种问法只有一份答案够用吗？",
+  "tags": [
+    "继续追问"
+  ],
+  "created_at": "2026-09-06T02:00:00+08:00",
+  "created_by": "seed:editor",
+  "state": "active",
+  "copied_from_question_id": null,
+  "is_example": true
+}

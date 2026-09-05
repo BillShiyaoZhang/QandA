@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "id": "q-follow-2",
+  "parent_answer_id": "a-002-a",
+  "current_revision_id": "q-follow-2.r1",
+  "title": "有限精度的计算机也会把0.999…存成1吗？",
+  "tags": [
+    "继续追问"
+  ],
+  "created_at": "2026-09-06T02:00:00+08:00",
+  "created_by": "seed:editor",
+  "state": "active",
+  "copied_from_question_id": null,
+  "is_example": true
+}

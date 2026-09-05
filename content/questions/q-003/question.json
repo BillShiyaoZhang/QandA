@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "id": "q-003",
+  "parent_answer_id": null,
+  "current_revision_id": "q-003.r1",
+  "title": "一张地图能和它描述的城市一样完整吗？",
+  "tags": [
+    "信息",
+    "模型"
+  ],
+  "created_at": "2026-09-06T02:00:00+08:00",
+  "created_by": "seed:editor",
+  "state": "active",
+  "copied_from_question_id": null,
+  "is_example": true
+}

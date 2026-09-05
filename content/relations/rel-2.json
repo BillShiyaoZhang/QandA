@@ -1,0 +1,26 @@
+{
+  "schema_version": 1,
+  "id": "rel-2",
+  "source_ref": {
+    "entity_type": "answer",
+    "entity_id": "a-006-a",
+    "body_sha256": "eeeed26b03ae18902552db7fc3bf1592ff5e493c715909494cb4937952fbb779"
+  },
+  "target_ref": {
+    "entity_type": "answer",
+    "entity_id": "a-014-b",
+    "body_sha256": "6b2214f55871a8adc03938a9ee9feaecc1d6b26ec8b2c67cbc9d1aeb4b92dfdc"
+  },
+  "type": "related_topic",
+  "rationale": "比较答案都需要区分表述、讨论范围与前提。",
+  "source_excerpt": "",
+  "target_excerpt": "",
+  "origin": "manual",
+  "proposed_by": "seed:editor",
+  "created_at": "2026-09-06T02:00:00+08:00",
+  "method_version": null,
+  "candidate_score": null,
+  "decision": "confirmed",
+  "decided_by": "seed:maintainer",
+  "decided_at": "2026-09-06T02:00:00+08:00"
+}

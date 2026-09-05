@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "id": "q-013",
+  "parent_answer_id": null,
+  "current_revision_id": "q-013.r1",
+  "title": "如果时间只能通过变化被察觉，没有变化时还有时间吗？",
+  "tags": [
+    "哲学",
+    "时间"
+  ],
+  "created_at": "2026-09-06T02:00:00+08:00",
+  "created_by": "seed:editor",
+  "state": "active",
+  "copied_from_question_id": null,
+  "is_example": true
+}

@@ -1,0 +1,14 @@
+node_modules/
+dist/
+.astro/
+.local/
+.env
+.env.*
+!.env.example
+playwright-report/
+test-results/
+.DS_Store
+.qanda-content.lock
+.qanda-stage-*/
+content.transaction.json
+content.transaction-backup/
