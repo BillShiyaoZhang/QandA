@@ -52,7 +52,7 @@ const snapshot = a.context.snapshot_id ? s.contexts[a.context.snapshot_id] : nul
             <>
               <>
                 <p class="small-text muted" style="margin-top:12px">
-                  模型输出未逐项核验。{a.is_example ? '这是开发样例，不代表真实模型评测结果。' : ''}
+                  回答内容未经平台事实核验。{a.is_example ? '这是开发样例，不代表真实模型评测结果。' : ''}
                 </p>
                 <div class="prose" style="margin-top:28px" set:html={markdown(s.bodies[a.id])} />
               </>
@@ -80,7 +80,7 @@ const snapshot = a.context.snapshot_id ? s.contexts[a.context.snapshot_id] : nul
                   ? '开发样例'
                   : a.provenance.kind === 'community_export'
                     ? '社区导出'
-                    : '社区粘贴'
+                    : '社区提交'
               }
             </dd><dt>身份依据</dt><dd>
               {a.provenance.identity_evidence === 'unknown' ? '未知' : '提交者声明，非平台验证'}

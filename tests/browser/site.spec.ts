@@ -68,11 +68,13 @@ test('contribution handoff contains only template and stable identifiers', async
     return route.fulfill({ status: 200, body: 'GitHub handoff intercepted by test' });
   });
   await page.goto(goto('contribute/?kind=follow-up&parent=a-001-a'));
-  await expect(page.getByLabel('父答案 ID', { exact: true })).toHaveValue('a-001-a');
-  await page.locator('#public-consent').check();
-  await page.getByRole('button', { name: '打开 GitHub 投稿表单' }).click();
+  await expect(page.getByLabel('想接着哪份回答问？', { exact: true })).toHaveValue('a-001-a');
+  await expect(page.locator('#public-consent')).toHaveCount(0);
+  await page.getByRole('button', { name: '去写追问' }).click();
   await expect.poll(() => requested).toContain('template=follow-up.yml');
-  expect(new URL(requested).searchParams.get('parent_answer_id')).toBe('a-001-a');
+  expect(new URL(new URL(requested).searchParams.get('parent_answer_id')!).pathname).toBe(
+    `${base}/answers/a-001-a/`,
+  );
   expect(new URL(requested).searchParams.has('body')).toBe(false);
 });
 test('relation graph links across branches and preserves actual parent path', async ({ page }) => {
@@ -196,7 +198,7 @@ test('comparison returns to the selected historical branch and contribution name
   await expect(page.locator('#tree-reading')).toContainText('来源与完整记录');
   await page.getByRole('link', { name: '＋ 追问这份回答', exact: true }).click();
   await expect(page.locator('#contribution-context')).toContainText('针对这份回答继续追问');
-  await expect(page.getByLabel('父答案 ID', { exact: true })).toHaveValue('a-006-a');
+  await expect(page.getByLabel('想接着哪份回答问？', { exact: true })).toHaveValue('a-006-a');
   await page.getByRole('link', { name: '返回这条分支', exact: true }).click();
   await expect(page).toHaveURL(/focus=a-006-a/);
 });

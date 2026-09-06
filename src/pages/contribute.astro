@@ -1,194 +1,143 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import { github } from '../lib/view';
+import { getContent, github, issueLink } from '../lib/view';
+import { contributionTargets } from '../lib/contribution';
+const targets = contributionTargets(getContent());
 ---
 
-<Layout title="参与贡献" active="contribute"
-  ><div class="page-heading">
-    <div>
-      <div class="eyebrow">ADD TO THE ARCHIVE</div><h1>让问题继续</h1><p class="muted">
-        分享一个问题、一份已经生成的答案，或两段内容之间的连接。
-      </p>
+<Layout title="分享问题与回答" active="contribute">
+  <div class="page-heading">
+    <div><div class="eyebrow">FOLLOW YOUR CURIOSITY</div><h1>让问题继续</h1>
+      <p class="muted">一个好奇的问题，一点自己的想法，都值得分享。</p>
     </div>
-  </div><div class="detail-grid">
+  </div>
+  <div class="detail-grid">
     <section class="reading">
-      <form id="contribution-form" data-github={github}>
+      <form id="contribution-form" data-github={github} data-targets={JSON.stringify(targets)}>
         <div class="field">
-          <label for="contribution-kind">想贡献什么？</label><select
-            id="contribution-kind"
-            name="kind"
-            ><option value="question">一个新问题</option><option value="answer"
-              >已有问题的一份答案</option
-            ><option value="follow-up">针对一份答案的追问</option><option value="relation"
-              >两段内容之间的关联</option
-            ></select>
-        </div><div id="contribution-context" class="notice" role="status" hidden></div><div class="field" id="target-field" hidden>
-          <label for="contribution-target" id="target-label">目标 ID</label><input
-            id="contribution-target"
-            name="target"
-            maxlength="120"
-            pattern="[a-zA-Z0-9][a-zA-Z0-9._\-]*"
-          /><small id="target-help"></small>
-        </div><div class="field" id="second-target-field" hidden>
-          <label for="second-target">另一段内容的节点 ID</label><input
-            id="second-target"
-            name="second_target"
-            maxlength="120"
-            pattern="[a-zA-Z0-9][a-zA-Z0-9._\-]*"
-          /><small>可以先留空，在 GitHub 表单里补充。</small>
-        </div><div id="kind-description" class="notice"></div><p class="form-note">
-          下一步将在 GitHub 填写正文。模型名称、生成时间和上下文不清楚时，可以填写“未知”；不需要 API
-          密钥。
-        </p><div class="field">
-          <label style="display:flex;gap:10px;align-items:start"
-            ><input
-              style="width:auto;margin-top:6px"
-              type="checkbox"
-              id="public-consent"
-              required
-            /><span
-              >我理解投稿内容会在 GitHub 公开，通过格式和引用检查后自动进入网站。我会只提交有权公开的内容。</span
-            ></label>
-        </div><p class="small-text muted">
-          需要 GitHub 账号。正文不会被写入本站跳转链接；请在下一步表单中粘贴。
-        </p><button class="button primary" type="submit">打开 GitHub 投稿表单 ↗</button><p
-          id="contribution-status"
-          role="status"
-          class="small-text muted"
-          style="margin-top:14px"
-        >
-        </p>
+          <label for="contribution-kind">想分享什么？</label>
+          <select id="contribution-kind" name="kind">
+            <option value="question">一个新问题</option>
+            <option value="answer">一份回答</option>
+            <option value="follow-up">接着一份回答追问</option>
+            <option value="relation">两段内容之间的关联</option>
+          </select>
+        </div>
+        <div id="kind-description" class="notice">只需写下想问的事，不用另起标题。也可以顺手附上已有回答。</div>
+        <div class="field" id="target-field" hidden>
+          <label for="contribution-target" id="target-label">选择内容</label>
+          <select id="contribution-target" name="target"></select>
+          <small>从问题或回答页面进入时，会自动选好位置。</small>
+        </div>
+        <div id="contribution-context" class="notice" role="status" hidden></div>
+        <div class="field" id="second-target-field" hidden>
+          <label for="second-target">另一段内容</label>
+          <select id="second-target" name="second_target"></select>
+        </div>
+        <div id="second-context" class="notice" role="status" hidden></div>
+        <p id="contribution-status" role="status" class="small-text muted"></p>
+        <p class="form-note">下一步在 GitHub 写正文并提交，需要 GitHub 账号。内容会公开，提交时确认一次即可。</p>
+        <button id="contribution-submit" class="button primary" type="submit">去写问题 ↗</button>
+        <p class="small-text muted" style="margin-top:14px">来源补充可以留空，不用查模型版本、日期或参数。</p>
       </form>
-    </section><aside>
+      <noscript><p class="notice">可以直接<a href={issueLink('new-question')}>去 GitHub 写问题</a>，或启用 JavaScript 选择回答、追问与关联的位置。</p></noscript>
+    </section>
+    <aside>
       <div class="sidebar-card">
-        <h2>投稿之后</h2><ol class="small-text">
-          <li>在 GitHub 提交表单，得到可追踪的 Issue。</li><li>
-            系统检查表单、公开提交确认和引用位置，自动收录。
-          </li><li>未通过时会说明原因；修改原投稿即可自动重试。</li><li>
-            收录后自动发布到网站，通常需要几分钟。
-          </li>
-        </ol><a href={`${github}/issues`} class="small-text">查看投稿进度 ↗</a>
-      </div><div class="notice">
-        “已提交”“已收录”和“已上线”是不同状态。平台归集与展示内容，不代表事实核验；内容监督在收录后进行。
+        <h2>你只需要带来内容</h2>
+        <p class="small-text">提问不必先有答案。回答可以是自己的思考，也可以是已有的 AI 回答。</p>
+        <p class="small-text muted">署名取自 GitHub 账号，投稿位置与记录时间由系统保存。知道来源时，在选填说明里补充即可。</p>
+      </div>
+      <div class="sidebar-card">
+        <h2>提交之后</h2>
+        <p class="small-text">系统检查后自动收录，通常几分钟后能在网站看到。需要补充时会在原投稿说明，修改后自动重试。</p>
+        <a href={`${github}/issues`} class="small-text">查看投稿进度 ↗</a>
       </div>
     </aside>
-  </div><section class="section reading" id="rules">
-    <h2>投稿与内容说明</h2><div class="prose">
-      <p>
-        可以提交独立问题、已有模型答案、针对具体答案的追问，也可以提出跨问题或跨分支的关联。追问请指明父答案；答案请指明实际回答的问题版本。
-      </p><p>
-        每条投稿只自动收录一次。收录后编辑 Issue 不会覆盖网站原文；补充答案或追问请提交新表单，更正与撤回可在 Issue 中说明。未知的生成时间、模型版本与上下文保持未知。分享链接不能取代答案正文。
-      </p><p>
-        不要提交私人聊天、密钥、个人敏感信息或无权公开的材料。公开 Issue
-        在网站收录之前就可能被他人访问。
-      </p><p>
-        提交即表示允许本项目公开展示、保存和按必要格式整理这份投稿，并保留提交者署名；这不改变第三方材料原有权利，也不自动为所有内容赋予统一的再许可。需要更正或撤回时，请通过原投稿或新
-        Issue 说明。
-      </p>
-    </div>
-  </section></Layout
->
+  </div>
+  <section class="section reading" id="rules">
+    <details>
+      <summary>公开分享与内容说明</summary>
+      <div class="prose">
+        <p>投稿会先在 GitHub 公开，通过格式和引用检查后自动进入网站。请只提交有权公开的内容，不要包含私人聊天、密钥或个人敏感信息。</p>
+        <p>问题和追问的第一行用作展示标题，完整正文会保留。分享已有回答时，请保留原意；来源、实际提问与背景可以写在选填说明中，分享链接不能取代回答正文。</p>
+        <p>回答固定在当时的问题版本，追问接着具体回答展开。关联默认表达主题相关；如选择观点支持或冲突，需要提供双方原文片段与理由。</p>
+        <p>每条投稿只自动收录一次。收录后编辑 Issue 不会覆盖网站原文；新回答或追问请另行提交，更正与撤回可在原投稿说明。收录不代表事实核验。</p>
+        <p>提交时确认允许本项目保留署名、公开展示、保存与必要格式整理；这不改变第三方材料原有权利。未提供的模型、生成时间和上下文保持未知，不根据署名推测内容作者或生成来源。</p>
+      </div>
+    </details>
+  </section>
+</Layout>
 <script>
-  const form = document.getElementById('contribution-form') as HTMLFormElement,
-    kind = document.getElementById('contribution-kind') as HTMLSelectElement,
-    target = document.getElementById('contribution-target') as HTMLInputElement,
-    second = document.getElementById('second-target') as HTMLInputElement,
-    params = new URLSearchParams(location.search);
-  const options: Record<
-    string,
-    { template: string; label: string; help: string; description: string; key?: string }
-  > = {
-    question: {
-      template: 'new-question',
-      label: '',
-      help: '',
-      description: '提出一个值得保存的新问题。可以附上已有答案，也可以先等待别人回答。',
-    },
-    answer: {
-      template: 'submit-answer',
-      label: '问题修订 ID',
-      key: 'question_revision_id',
-      help: '从指定的问题版本页面进入，会自动带上这个 ID。',
-      description:
-        '提交一份你已经生成的答案。不同模型、不同时间或同模型的另一次回答，都可以独立记录。',
-    },
-    'follow-up': {
-      template: 'follow-up',
-      label: '父答案 ID',
-      key: 'parent_answer_id',
-      help: '追问针对一份具体答案，而不是抽象的“最新回答”。',
-      description: '接着一份具体答案继续提问，形成新的分支。也可以同时提交这个追问的第一份答案。',
-    },
-    relation: {
-      template: 'suggest-relation',
-      label: '来源节点 ID',
-      key: 'source_id',
-      help: '使用答案 ID 或问题修订 ID；关联固定到这份内容。',
-      description:
-        '提出主题相关、观点支持或观点冲突的关联。请在下一步说明双方的具体内容和判断理由。',
-    },
+  import type { ContributionTarget } from '../lib/contribution';
+  const form = document.getElementById('contribution-form') as HTMLFormElement;
+  const kind = document.getElementById('contribution-kind') as HTMLSelectElement;
+  const target = document.getElementById('contribution-target') as HTMLSelectElement;
+  const second = document.getElementById('second-target') as HTMLSelectElement;
+  const button = document.getElementById('contribution-submit') as HTMLButtonElement;
+  const status = document.getElementById('contribution-status')!;
+  const targets: ContributionTarget[] = JSON.parse(form.dataset.targets!);
+  const params = new URLSearchParams(location.search);
+  const options: Record<string, { template: string; label: string; description: string; button: string; type?: string; key?: string }> = {
+    question: { template: 'new-question', label: '', description: '只需写下想问的事，不用另起标题。也可以顺手附上已有回答。', button: '去写问题' },
+    answer: { template: 'submit-answer', label: '想回答哪个问题？', description: '写下自己的想法，或粘贴一份已有回答。知道来源时顺手说明，不清楚就留空。', button: '去写回答', type: 'revision', key: 'question_revision_id' },
+    'follow-up': { template: 'follow-up', label: '想接着哪份回答问？', description: '哪一点让你想继续问下去？写下追问即可，也可以附上自己的初步回答。', button: '去写追问', type: 'answer', key: 'parent_answer_id' },
+    relation: { template: 'suggest-relation', label: '从哪段内容开始？', description: '选好两段内容，下一步说说它们为什么有关。主题相关无需摘录原文；支持或冲突需要双方证据。', button: '去说明关联', key: 'source_id' },
   };
-  if (params.get('kind') && options[params.get('kind')!]) kind.value = params.get('kind')!;
-  target.value = params.get('revision') || params.get('parent') || params.get('source') || '';
-  second.value = params.get('target') || '';
-  function update() {
+  if (options[params.get('kind') || '']) kind.value = params.get('kind')!;
+  function populate(select: HTMLSelectElement, items: ContributionTarget[], selected = '') {
+    select.replaceChildren(new Option('请选择…', ''));
+    for (const item of items) select.add(new Option(item.label, item.id));
+    select.value = items.some((item) => item.id === selected) ? selected : '';
+  }
+  function showContext(select: HTMLSelectElement, boxId: string) {
+    const box = document.getElementById(boxId)!;
+    const item = targets.find((item) => item.id === select.value);
+    box.replaceChildren();
+    box.hidden = !item || kind.value === 'question' || (boxId === 'second-context' && kind.value !== 'relation');
+    if (box.hidden || !item) return;
+    const title = document.createElement('strong'); title.textContent = item.title;
+    const text = document.createElement('p');
+    text.textContent = `${kind.value === 'follow-up' ? '针对这份回答继续追问' : item.kind === 'revision' ? '已选问题版本' : '已选回答'}：${item.excerpt}`;
+    const link = document.createElement('a');
+    link.href = `${import.meta.env.BASE_URL}${item.path}`;
+    link.textContent = '查看这段内容 ↗';
+    box.append(title, text, link);
+  }
+  function refreshSelection() {
+    showContext(target, 'contribution-context');
+    if (kind.value === 'relation') populate(second, targets.filter((item) => item.id !== target.value), second.value);
+    showContext(second, 'second-context');
+    button.disabled = !!options[kind.value].key && (!target.value || (kind.value === 'relation' && !second.value));
+  }
+  function update(selected = '', other = '') {
     const o = options[kind.value];
     document.getElementById('target-field')!.hidden = !o.key;
-    target.required = !!o.key;
     document.getElementById('target-label')!.textContent = o.label;
-    document.getElementById('target-help')!.textContent = o.help;
     document.getElementById('second-target-field')!.hidden = kind.value !== 'relation';
     document.getElementById('kind-description')!.textContent = o.description;
-    void showContext();
+    button.textContent = o.button + ' ↗';
+    target.required = !!o.key;
+    second.required = kind.value === 'relation';
+    const available = targets.filter((item) => (!o.type || item.kind === o.type) && (kind.value === 'relation' || !item.archived));
+    populate(target, available, selected);
+    populate(second, targets.filter((item) => item.id !== target.value), other);
+    status.textContent = o.key && !available.length ? '暂时没有可选择的内容。可以先分享一个新问题。' : o.key && selected && !target.value ? '原位置不存在、已归档或已撤回，请重新选择。' : kind.value === 'relation' && targets.length < 2 ? '至少需要两段可用内容才能建立关联。' : '';
+    refreshSelection();
   }
-  let contextRequest = 0;
-  async function showContext() {
-    const token = ++contextRequest;
-    const box = document.getElementById('contribution-context')!;
-    const id = target.value.trim();
-    box.replaceChildren();
-    box.hidden = kind.value === 'question' || !id;
-    if (box.hidden) return;
-    if (!/^[a-zA-Z0-9][a-zA-Z0-9._-]*$/.test(id)) {
-      box.textContent = '请选择已有问题或回答的投稿入口。'; return;
-    }
-    box.textContent = '正在确认投稿位置…';
-    try {
-      const response = await fetch(`${import.meta.env.BASE_URL}data/nodes/${encodeURIComponent(id)}.json`);
-      if (!response.ok) throw Error();
-      const data = await response.json();
-      if (token !== contextRequest) return;
-      box.replaceChildren();
-      const title = document.createElement('strong');
-      title.textContent = data.question.title;
-      const description = document.createElement('p');
-      const purpose = kind.value === 'relation' ? '为这段内容提出关联' : data.answer ? '针对这份回答继续追问' : '为这一版提问提交答案';
-      description.textContent = `${purpose}：${data.body.slice(0, 160)}`;
-      const back = document.createElement('a');
-      back.href = `${import.meta.env.BASE_URL}questions/${data.question.id}/?focus=${encodeURIComponent(id)}`;
-      back.textContent = '返回这条分支';
-      box.append(title, description, back);
-      if (data.archived || data.withdrawn) {
-        const note = document.createElement('p'); note.textContent = '此位置已归档或撤回，请返回分支选择可投稿的内容。'; box.append(note);
-      }
-    } catch { if (token === contextRequest) box.textContent = '暂时无法确认此位置，请核对下方 ID，或返回原问题重新进入。'; }
-  }
-  target.addEventListener('change', () => void showContext());
-  kind.addEventListener('change', () => {
-    target.value = '';
-    second.value = '';
-    update();
-  });
-  update();
-  form.addEventListener('submit', (e) => {
-    e.preventDefault();
-    if (!form.reportValidity()) return;
-    const o = options[kind.value],
-      u = new URL(form.dataset.github! + '/issues/new');
+  target.addEventListener('change', () => { status.textContent = ''; refreshSelection(); });
+  second.addEventListener('change', refreshSelection);
+  kind.addEventListener('change', () => update());
+  update(params.get('revision') || params.get('parent') || params.get('source') || '', params.get('target') || '');
+  form.addEventListener('submit', (event) => {
+    event.preventDefault();
+    if (button.disabled || !form.reportValidity()) return;
+    const o = options[kind.value];
+    const u = new URL(form.dataset.github! + '/issues/new');
     u.searchParams.set('template', o.template + '.yml');
-    if (o.key) u.searchParams.set(o.key, target.value.trim());
-    if (kind.value === 'relation' && second.value.trim())
-      u.searchParams.set('target_id', second.value.trim());
+    const position = (id: string) => new URL(`${import.meta.env.BASE_URL}${targets.find((item) => item.id === id)!.path}`, location.origin).toString();
+    if (o.key) u.searchParams.set(o.key, position(target.value));
+    if (kind.value === 'relation') u.searchParams.set('target_id', position(second.value));
     location.assign(u.toString());
   });
 </script>
