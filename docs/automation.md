@@ -25,6 +25,7 @@ flowchart LR
 - 只有内容校验与构建通过后才提交 `content/`；代码、工作流、依赖都不能来自 Issue。每条投稿失败不会妨碍同批其他有效投稿。
 - `GITHUB_TOKEN` 创建的提交不会触发普通 `push` 工作流，因此归集显式调用可复用的 `deploy.yml`，传入实际内容提交 SHA。构建精确版本，发布前再确认它仍是当前 main，防止旧版本覆盖新版本。[Token 行为](https://docs.github.com/en/actions/concepts/security/github_token)
 - 即使反馈失败，只要内容已提交仍会尝试发布。定时或手动运行会重试发布，即使没有新增内容；发布失败时原网站保持可用。
+- Pages 实际发布成功后，按该次发布的来源收据更新机器人回复，并以 `completed` 自动关闭已完成的投稿。仅构建成功、部署被跳过或失败都不会关闭；暂停、正文已改动、未收录或已撤回的投稿也不会因此关闭。关闭前再次核对当前 Issue；失败可在下次成功发布时重试。
 
 ## 状态与事后操作
 
@@ -32,12 +33,12 @@ flowchart LR
 
 | 标签 | 含义与下一步 |
 | --- | --- |
-| `intake:collected` | 原文和来源已保存；等待成功部署后链接可用 |
+| `intake:collected` | 原文和来源已保存；发布成功后自动回复上线链接并关闭 |
 | `intake:needs-info` | 投稿者按机器人说明修正原表单，保存后自动重试 |
 | `intake:amended` | 首次收录后源 Issue 有变化；历史原文保持不变 |
 | `intake:paused` | 维护者临时暂停该条归集；删除标签后自动重试。不会撤回已发布内容 |
 
-关闭 Issue 不会撤回正文；网站内容的事后处理使用 [维护工具](../CONTRIBUTING.md)。每份自动收据和发布元数据标记 `intake_method: github-actions`，旧版本未标记的记录属于原人工流程；兼容字段 `reviewer/reviewed_by` 在自动记录中保存执行者，不代表人工审核。
+关闭 Issue 表示投稿处理完成，不会撤回正文，也不代表事实核验；网站内容的事后处理使用 [维护工具](../CONTRIBUTING.md)。重新打开且正文未变的已完成投稿，会在下一次成功发布后再次关闭；需要保留开放状态处理后续事项时，维护者可加 `intake:paused`。每份自动收据和发布元数据标记 `intake_method: github-actions`，旧版本未标记的记录属于原人工流程；兼容字段 `reviewer/reviewed_by` 在自动记录中保存执行者，不代表人工审核。
 
 社区关联为 `submitted`，在网站显示提出者；人工确认关联为 `confirmed`。词项算法候选 `proposed` 仍不会发布。自动化只检查结构、可见性和片段确实出现在原文中，不判断语义关系和观点是否正确。
 
