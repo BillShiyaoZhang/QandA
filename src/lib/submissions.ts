@@ -450,6 +450,7 @@ export function reviewDraft(
   draftFile: string,
   reviewer: string,
   decision: 'publish' | 'reject',
+  options: { intakeMethod?: 'manual' | 'github-actions' } = {},
 ) {
   if (!reviewer.trim()) throw new Error('请明确记录审核人');
   const lock = path.join(path.dirname(contentRoot), '.qanda-content.lock'),
@@ -509,17 +510,24 @@ export function reviewDraft(
     const files = { ...draft.files };
     for (const [name, data] of Object.entries(files)) {
       if (name.startsWith('publications/'))
-        files[name] = serial({ ...JSON.parse(data), reviewed_by: reviewer, reviewed_at: now });
+        files[name] = serial({
+          ...JSON.parse(data),
+          reviewed_by: reviewer,
+          reviewed_at: now,
+          intake_method: options.intakeMethod || 'manual',
+        });
       else if (name.startsWith('relations/')) {
         const r = JSON.parse(data);
         if (!visibleRef(s, r.source_ref) || !visibleRef(s, r.target_ref))
           throw new Error('关联端点已不可公开');
-        r.decision = 'confirmed';
-        r.decided_by = reviewer;
-        r.decided_at = now;
+        const automatic = options.intakeMethod === 'github-actions';
+        r.decision = automatic ? 'submitted' : 'confirmed';
+        r.decided_by = automatic ? null : reviewer;
+        r.decided_at = automatic ? null : now;
         files[name] = serial(r);
         files[`publications/relation/${r.id}.json`] = serial({
           ...publication('relation', r.id, reviewer),
+          intake_method: options.intakeMethod || 'manual',
           source_issue_url: draft.source.url,
           source_updated_at: draft.source.updated_at,
           source_body_sha256: sha256(draft.source.body),
@@ -539,6 +547,7 @@ export function reviewDraft(
       submission_sha256: sha256(canonical(draft.submission)),
       reviewer,
       reviewed_at: now,
+      intake_method: options.intakeMethod || 'manual',
       entity_ids: entityIds,
     });
     const staging = stage(contentRoot, files);

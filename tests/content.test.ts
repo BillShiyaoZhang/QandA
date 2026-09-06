@@ -165,7 +165,7 @@ test('claims of captured or complete context require an actual snapshot', () => 
 test('candidate and rejected relations stay out of public data; withdrawn endpoint hides confirmed edge', () => {
   const s = clone();
   s.relations['rel-1'].decision = 'proposed';
-  assert.throws(() => validateStore(s), /未确认/);
+  assert.throws(() => validateStore(s), /未收录/);
   assert.equal(publicStore(s).relations['rel-1'], undefined);
   s.relations['rel-1'].decision = 'confirmed';
   s.publications['revision:q-001.r1'].state = 'withdrawn';

@@ -15,6 +15,7 @@
     "test": "node --import tsx --import ./tests/setup.ts --test tests/*.test.ts",
     "test:e2e": "node --import tsx tests/run-browser.ts",
     "import": "node --import tsx scripts/import-submission.ts",
+    "intake": "node --import tsx scripts/collect-issues.ts",
     "review": "node --import tsx scripts/review-submission.ts",
     "relations": "node --import tsx scripts/suggest-relations.ts",
     "benchmark": "node --import tsx scripts/benchmark.ts",
