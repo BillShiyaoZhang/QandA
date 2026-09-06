@@ -14,7 +14,7 @@ import {
 import { publicStore, copyPath, questionPath, isArchived } from '../src/lib/graph';
 import { generationSchema, emptyStore } from '../src/lib/schema';
 import { markdown } from '../src/lib/view';
-const seed = () => loadStore(path.resolve('content'));
+const seed = () => loadStore(process.env.CONTENT_DIR!);
 const clone = () => structuredClone(seed());
 test('seed corpus has roots, multiple answers, sibling branches, and stable revisions', () => {
   const s = seed();

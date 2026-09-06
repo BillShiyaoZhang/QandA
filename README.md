@@ -2,7 +2,7 @@
 
 把有趣的问题、不同来源的答案、回答后的追问，以及不同探索路径之间的关联保存下来。每份答案固定关联当时的问题版本，追问从一份具体答案继续展开。
 
-首版已经实现静态网站、内容校验、访客投稿表单和维护工具。内置 **27 个问题、41 份答案、3 条关联、1 条注释**，均为明确标识的开发样例；不代表真实社区投稿或模型评测。公开投稿通过 GitHub Issue Forms 进行，需要 GitHub 账号；本项目不自动调用模型。
+首版已经实现静态网站、内容校验、访客投稿表单和维护工具。**正式内容库已清空开发样例**，等待收录真实问题和答案。公开投稿通过 GitHub Issue Forms 进行，需要 GitHub 账号；本项目不自动调用模型。
 
 - [设计与可行性分析](docs/design.md)
 - [实现说明](docs/implementation.md)
@@ -27,6 +27,7 @@ npm test
 npm run build
 npx playwright install chromium
 npm run test:e2e -- site.spec.ts
+npm run test:production
 ```
 
 在禁止写入全局偏好的环境中，可以设置 `ASTRO_TELEMETRY_DISABLED=1`。构建产物在 `dist/`，不写入 Git。页面内容来自 `content/`，没有数据库或 API 密钥。
@@ -50,7 +51,7 @@ SITE_URL=https://billshiyaozhang.github.io SITE_BASE=/QandA npm run build
 TEST_BASE_PATH=/QandA npm run test:e2e -- site.spec.ts
 ```
 
-仓库需要由所有者确认访问范围，并在 Settings → Pages 选择 GitHub Actions。公开访客投稿还要求 Issues 可对访客访问。当前 GitHub 仓库是私有仓库；改变仓库可见性会同时公开已有提交历史，不能只把它当作站点开关。确认公开之前，可先本地运行或使用仅所有者可见的预览。
+当前仓库已由所有者公开并合并首版，Pages 配置使用 GitHub Actions。公开访客可通过 Issues 投稿；收录后随正式内容构建发布。
 
 `.openai/hosting.json` 另用于 Sites 私有预览，`static.directory` 指向 `dist`。Sites 预览使用根路径构建；GitHub Pages 使用 `/QandA`，两者共用同一套源码。
 
@@ -58,10 +59,9 @@ TEST_BASE_PATH=/QandA npm run test:e2e -- site.spec.ts
 
 ```sh
 npm run verify:export
-npm run benchmark -- --build
-BENCHMARK_BROWSER=1 TEST_DIST_DIR=.local/benchmark-dist TEST_BASE_PATH=/QandA npm run test:e2e -- benchmark.spec.ts
+npm run benchmark -- --build --browser
 ```
 
-测试数据、日志、候选和审核草稿保存在被忽略的 `.local/`，不会进入站点。`npm run seed` 只用于初始化开发样例，不覆盖已经存在的记录。
+单元测试、浏览器测试、撤回与容量检查均在系统临时目录生成夹具，运行结束自动删除。`npm run test:e2e` 自行构建临时测试站点，不依赖正式库；`npm run test:production` 检查已经构建的真实 `dist/`。测试辅助代码不能把样例写入正式 `content/`，已移除默认播种命令。`.local/` 仅保留汇总报告或维护草稿，Pages 始终只发布正式构建的 `dist/`。
 
 当前暂时禁止格式化 `.astro` 文件：现用 `prettier-plugin-astro` 在部分条件表达式中会丢失相邻标签，已在 `.prettierignore` 排除。TypeScript、测试和配置仍可运行 `npm run format`；不要移除此排除项后批量改写页面。

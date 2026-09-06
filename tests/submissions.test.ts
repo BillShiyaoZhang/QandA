@@ -15,7 +15,7 @@ function fixture(t: any) {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'qanda-import-')),
     root = path.join(dir, 'content'),
     drafts = path.join(dir, 'drafts');
-  fs.cpSync(path.resolve('content'), root, { recursive: true });
+  fs.cpSync(process.env.CONTENT_DIR!, root, { recursive: true });
   t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
   return { dir, root, drafts };
 }

@@ -1,12 +1,17 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import os from 'node:os';
 import { execFileSync } from 'node:child_process';
 import { performance } from 'node:perf_hooks';
 import { sha256, publication, loadStore, validateStore, walk } from '../src/lib/content';
 import { unknownGeneration } from '../src/lib/schema';
 import { copyPath } from '../src/lib/graph';
-const target = path.resolve('.local/benchmark-content'),
-  output = path.resolve('.local/benchmark-dist');
+const temporary = fs.mkdtempSync(path.join(os.tmpdir(), 'qanda-capacity-'));
+process.on('exit', () => fs.rmSync(temporary, { recursive: true, force: true }));
+const target = path.join(temporary, 'content'),
+  output = path.join(temporary, 'dist');
+if (process.argv.includes('--browser') && !process.argv.includes('--build'))
+  throw new Error('--browser requires --build');
 fs.mkdirSync(target, { recursive: true });
 function write(p: string, v: unknown) {
   const f = path.join(target, p);
@@ -102,7 +107,7 @@ if (process.argv.includes('--build')) {
     encoding: 'utf8',
     maxBuffer: 30 * 1024 * 1024,
   });
-  fs.writeFileSync('.local/benchmark-build.log', log);
+  fs.writeFileSync(path.join(temporary, 'build.log'), log);
   execFileSync(process.execPath, ['node_modules/pagefind/lib/runner/bin.cjs', '--site', output], {
     encoding: 'utf8',
     maxBuffer: 5 * 1024 * 1024,
@@ -123,5 +128,24 @@ const report = {
   outputFiles: files,
   measuredAt: new Date().toISOString(),
 };
+fs.mkdirSync('.local', { recursive: true });
 fs.writeFileSync('.local/benchmark-report.json', JSON.stringify(report, null, 2));
 console.log(JSON.stringify(report, null, 2));
+if (process.argv.includes('--browser')) {
+  const artifacts = path.join(temporary, 'artifacts');
+  fs.mkdirSync(artifacts);
+  execFileSync(
+    process.execPath,
+    ['node_modules/@playwright/test/cli.js', 'test', 'benchmark.spec.ts'],
+    {
+      env: {
+        ...process.env,
+        BENCHMARK_BROWSER: '1',
+        TEST_DIST_DIR: output,
+        TEST_BASE_PATH: '/QandA',
+        TEST_ARTIFACT_DIR: artifacts,
+      },
+      stdio: 'inherit',
+    },
+  );
+}

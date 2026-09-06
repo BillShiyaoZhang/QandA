@@ -12,9 +12,8 @@
     "preview": "astro preview --host 127.0.0.1",
     "check": "astro check",
     "validate": "node --import tsx scripts/validate-content.ts",
-    "test": "node --import tsx --test tests/*.test.ts",
-    "test:e2e": "playwright test",
-    "seed": "node --import tsx scripts/seed-content.ts",
+    "test": "node --import tsx --import ./tests/setup.ts --test tests/*.test.ts",
+    "test:e2e": "node --import tsx tests/run-browser.ts",
     "import": "node --import tsx scripts/import-submission.ts",
     "review": "node --import tsx scripts/review-submission.ts",
     "relations": "node --import tsx scripts/suggest-relations.ts",
@@ -23,7 +22,8 @@
     "relation:review": "node --import tsx scripts/review-relation.ts",
     "indexes": "node --import tsx scripts/build-indexes.ts",
     "format": "prettier --write src scripts tests .github astro.config.mjs playwright.config.ts package.json tsconfig.json",
-    "verify:export": "node --import tsx scripts/verify-public-export.ts"
+    "verify:export": "node --import tsx scripts/verify-public-export.ts",
+    "test:production": "playwright test production.spec.ts"
   },
   "dependencies": {
     "astro": "7.3.1",
