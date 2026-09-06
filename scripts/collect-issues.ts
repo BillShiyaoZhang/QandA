@@ -7,11 +7,13 @@ import {
   type IntakeResult,
 } from '../src/lib/issue-intake';
 import { loadStore, sha256 } from '../src/lib/content';
+import { publicStore, visibleRef } from '../src/lib/graph';
 
 const root = path.resolve(process.env.CONTENT_DIR || 'content');
 const drafts = path.resolve(process.env.DRAFTS_DIR || '.local/submissions');
 const reportPath = path.resolve('.local/intake-results.json');
 const marker = '<!-- qanda-automatic-intake:v1 -->';
+const publishedMarker = '<!-- qanda-published:v1 -->';
 const statusLabels = ['intake:collected', 'intake:needs-info', 'intake:amended'];
 const token = process.env.GH_TOKEN;
 if (!token) throw new Error('GH_TOKEN is required.');
@@ -65,8 +67,10 @@ function links(ids: string[]) {
     .join(' · ');
 }
 
-function feedbackBody(result: IntakeResult) {
+function feedbackBody(result: IntakeResult, published = false) {
   const history = links(result.entityIds || []);
+  if (published)
+    return `${marker}\n${publishedMarker}\n已自动收录并成功发布到网站。投稿处理已完成，系统会自动关闭本 Issue。\n\n${history}\n\n关闭只表示投稿处理完成，不代表事实核验，也不会删除内容。补充答案或追问请提交新表单；更正、撤回可在原 Issue 补充说明，或另开 Issue 并附上目标链接。`;
   if (result.status === 'needs-info') {
     // Render diagnostics as inert text, including any punctuation from invalid input.
     const message = (result.message || '')
@@ -79,7 +83,7 @@ function feedbackBody(result: IntakeResult) {
   return `${marker}\n已自动收录，内容会随下一次成功发布进入网站，通常需要几分钟。\n\n${history}\n\n[查看网站发布进度](https://github.com/${repository}/actions/workflows/deploy.yml) · [查看自动归集运行](https://github.com/${repository}/actions/workflows/intake.yml)\n\n平台保存提交者提供的原文与来源，不代表事实核验。再次编辑本 Issue 不会覆盖已收录快照；补充答案或追问请提交新表单。`;
 }
 
-async function feedback(results: IntakeResult[]) {
+async function feedback(results: IntakeResult[], published = false) {
   const actionable = results.filter((r) => !['ignored', 'paused'].includes(r.status));
   if (!actionable.length) return;
   const labels = await paginate('labels');
@@ -116,14 +120,82 @@ async function feedback(results: IntakeResult[]) {
       (comment) =>
         comment.user?.login === 'github-actions[bot]' && comment.body?.startsWith(marker),
     );
-    const body = feedbackBody(result);
+    // A later Issue event must not turn a published receipt back into "waiting".
+    if (
+      !published &&
+      result.status === 'already-collected' &&
+      existing?.body.includes(publishedMarker)
+    )
+      continue;
+    const body = feedbackBody(result, published);
     if (existing) {
       if (existing.body !== body) await api(`issues/comments/${existing.id}`, 'PATCH', { body });
     } else await api(`issues/${result.number}/comments`, 'POST', { body });
   }
 }
 
-if (process.argv.includes('--feedback')) {
+async function closePublished() {
+  // This checkout must be the exact source of a successful Pages deployment.
+  const store = loadStore(root),
+    visible = publicStore(store);
+  const receipts = Object.values(store.imports).filter(
+    (receipt) =>
+      receipt.intake_method === 'github-actions' &&
+      receipt.entity_ids.every((id) => {
+        if (store.answers[id]) return visibleRef(store, { entity_type: 'answer', entity_id: id });
+        if (store.revisions[id])
+          return visibleRef(store, { entity_type: 'revision', entity_id: id });
+        return Object.values(visible.publications).some(
+          (p) => p.entity_id === id && p.state === 'published',
+        );
+      }),
+  );
+  // Listing open issues avoids revisiting deleted, transferred, or already closed sources.
+  const issues: IntakeIssue[] = await paginate('issues?state=open&sort=created&direction=asc');
+  for (const candidate of issues) {
+    if (candidate.pull_request || candidate.labels.some((label) => label.name === 'intake:paused'))
+      continue;
+    const receipt = receipts.find(
+      (r) =>
+        r.source_url === candidate.html_url &&
+        r.source_body_sha256 === sha256(candidate.body || ''),
+    );
+    if (
+      !receipt ||
+      candidate.html_url !== `https://github.com/${repository}/issues/${candidate.number}`
+    )
+      continue;
+    await feedback(
+      [
+        {
+          number: candidate.number,
+          status: 'already-collected',
+          bodyHash: receipt.source_body_sha256,
+          entityIds: receipt.entity_ids,
+        },
+      ],
+      true,
+    );
+    // Recheck after feedback to avoid closing an Issue that changed during publication.
+    const current: IntakeIssue = await api(`issues/${candidate.number}`);
+    if (
+      current.state === 'open' &&
+      current.html_url === receipt.source_url &&
+      sha256(current.body || '') === receipt.source_body_sha256 &&
+      !current.labels.some((label) => label.name === 'intake:paused')
+    ) {
+      await api(`issues/${candidate.number}`, 'PATCH', {
+        state: 'closed',
+        state_reason: 'completed',
+      });
+      console.log(`#${candidate.number}: published and closed`);
+    }
+  }
+}
+
+if (process.argv.includes('--close-published')) {
+  await closePublished();
+} else if (process.argv.includes('--feedback')) {
   await feedback(JSON.parse(fs.readFileSync(reportPath, 'utf8')));
 } else {
   const issues: IntakeIssue[] = await paginate('issues?state=open&sort=created&direction=asc');

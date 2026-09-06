@@ -62,16 +62,21 @@ globalThis.fetch = async (url, options = {}) => {
   const issue = state.issues.find(i => i.number === Number(parts[1]));
   const paged = rows => rows.slice((Number(parsed.searchParams.get('page') || 1) - 1) * 100, Number(parsed.searchParams.get('page') || 1) * 100);
   let result;
-  if (method === 'GET' && endpoint === 'issues') result = paged(state.issues);
+  if (method === 'GET' && endpoint === 'issues') result = paged(state.issues.filter(i => i.state === parsed.searchParams.get('state')));
   else if (method === 'GET' && endpoint === 'labels') result = paged(state.labels);
   else if (method === 'POST' && endpoint === 'labels') { state.labels.push(body); result = body; }
   else if (method === 'GET' && parts.length === 2 && Boolean(issue)) result = issue;
+  else if (method === 'PATCH' && parts.length === 2 && Boolean(issue)) {
+    if (body.state !== 'closed' || body.state_reason !== 'completed') throw new Error('Unexpected closure');
+    Object.assign(issue, body); result = issue;
+  }
   else if (method === 'GET' && parts.length === 3 && parts[2] === 'comments' && Boolean(issue)) result = paged(state.comments);
   else if (method === 'POST' && parts.length === 3 && parts[2] === 'labels' && Boolean(issue)) { issue.labels.push(...body.labels.map(name => ({name}))); result = issue.labels; }
   else if (method === 'POST' && parts.length === 3 && parts[2] === 'comments' && Boolean(issue)) {
     result = {id: state.comments.length + 1, body: body.body, user: {login: 'github-actions[bot]'}};
     state.comments.push(result);
   } else if (method === 'PATCH' && parts.length === 3 && parts[1] === 'comments') {
+    if (state.failComment) throw new Error('Simulated comment failure');
     result = state.comments.find(c => c.id === Number(endpoint.split('/')[2])); result.body = body.body;
   } else if (method === 'DELETE' && parts.length === 4 && parts[2] === 'labels' && Boolean(issue)) {
     issue.labels = issue.labels.filter(l => l.name !== decodeURIComponent(endpoint.split('/').at(-1)));
@@ -83,7 +88,7 @@ globalThis.fetch = async (url, options = {}) => {
 `,
   );
   const script = path.resolve('scripts/collect-issues.ts');
-  const run = (feedback = false) =>
+  const run = (mode: 'collect' | 'feedback' | 'close-published' = 'collect') =>
     execFileSync(
       process.execPath,
       [
@@ -92,7 +97,7 @@ globalThis.fetch = async (url, options = {}) => {
         '--import',
         pathToFileURL(mockPath).href,
         script,
-        ...(feedback ? ['--feedback'] : []),
+        ...(mode === 'collect' ? [] : [`--${mode}`]),
       ],
       {
         cwd: temp,
@@ -114,23 +119,57 @@ globalThis.fetch = async (url, options = {}) => {
   assert.ok(read().calls.some((call: any) => call.endpoint === 'issues' && call.page === '2'));
   assert.ok(read().calls.every((call: any) => call.method === 'GET'));
   const saved = canonical(loadStore(root));
-  run(true);
+  run('feedback');
   assert.equal(read().comments.length, 1);
   assert.match(read().comments[0].body, /已自动收录/);
   assert.match(read().comments[0].body, /通常需要几分钟/);
+  assert.equal(read().issues.at(-1).state, 'open');
   let state = read();
   state.calls = [];
   state.issues.at(-1).updated_at = '2026-09-07T00:00:00Z';
   save(state);
   run();
-  run(true);
+  run('feedback');
   assert.equal(canonical(loadStore(root)), saved);
   assert.ok(read().calls.every((call: any) => call.method === 'GET'));
+  // A feedback outage must leave the Issue open so the next deployment can retry.
   state = read();
+  state.failComment = true;
+  save(state);
+  assert.throws(() => run('close-published'));
+  assert.equal(read().issues.at(-1).state, 'open');
+  state = read();
+  state.failComment = false;
+  save(state);
+  run('close-published');
+  assert.equal(read().issues.at(-1).state, 'closed');
+  assert.equal(read().issues.at(-1).state_reason, 'completed');
+  assert.equal(read().comments.length, 1);
+  assert.match(read().comments[0].body, /成功发布到网站/);
+  state = read();
+  state.calls = [];
+  save(state);
+  // Closed issues are not revisited, and a saved report must not downgrade the reply.
+  run('close-published');
+  run('feedback');
+  assert.ok(read().calls.every((call: any) => call.method === 'GET'));
+  assert.match(read().comments[0].body, /成功发布到网站/);
+  state = read();
+  state.issues.at(-1).state = 'open';
+  state.issues.at(-1).labels.push({ name: 'intake:paused' });
+  save(state);
+  run('close-published');
+  assert.equal(read().issues.at(-1).state, 'open');
+  state = read();
+  state.issues.at(-1).labels = state.issues
+    .at(-1)
+    .labels.filter((label: any) => label.name !== 'intake:paused');
   state.issues.at(-1).body = body.replace('测试文本', '编辑后的文本');
   save(state);
+  run('close-published');
+  assert.equal(read().issues.at(-1).state, 'open');
   run();
-  run(true);
+  run('feedback');
   assert.equal(canonical(loadStore(root)), saved);
   assert.equal(read().comments.length, 1);
   assert.match(read().comments[0].body, /不会覆盖正文/);

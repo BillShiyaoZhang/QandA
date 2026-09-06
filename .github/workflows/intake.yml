@@ -75,6 +75,7 @@ jobs:
       contents: read
       pages: write
       id-token: write
+      issues: write
     uses: ./.github/workflows/deploy.yml
     with:
       content_sha: ${{ needs.collect.outputs.sha }}
