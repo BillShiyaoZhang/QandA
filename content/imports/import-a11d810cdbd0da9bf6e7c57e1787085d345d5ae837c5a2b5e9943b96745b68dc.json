@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "id": "import-a11d810cdbd0da9bf6e7c57e1787085d345d5ae837c5a2b5e9943b96745b68dc",
+  "key": "a11d810cdbd0da9bf6e7c57e1787085d345d5ae837c5a2b5e9943b96745b68dc",
+  "source_url": "https://github.com/BillShiyaoZhang/QandA/issues/3",
+  "source_updated_at": "2026-09-06T01:04:15Z",
+  "source_body_sha256": "d0d9131350854a0ba25c73da77ca1776017071916b7c0bc94d3ed2b13016cdc7",
+  "submission_sha256": "b55f87d3d001f06e43002f329e59868161be1ab30357fbd8e9ddba47da4d0843",
+  "reviewer": "github-actions[bot]",
+  "reviewed_at": "2026-09-06T02:34:24.749Z",
+  "intake_method": "github-actions",
+  "entity_ids": [
+    "q-dfb4c941-1cfa-4ff3-b073-a1783f62ebde",
+    "r-22b8e830-05a1-441b-8200-4858ea26bbda",
+    "a-9ff98620-388b-4081-97db-36ae604ef5a9"
+  ]
+}

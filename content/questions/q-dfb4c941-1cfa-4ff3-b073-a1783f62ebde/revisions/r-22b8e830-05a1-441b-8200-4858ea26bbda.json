@@ -1,0 +1,10 @@
+{
+  "schema_version": 1,
+  "id": "r-22b8e830-05a1-441b-8200-4858ea26bbda",
+  "question_id": "q-dfb4c941-1cfa-4ff3-b073-a1783f62ebde",
+  "body_path": "questions/q-dfb4c941-1cfa-4ff3-b073-a1783f62ebde/revisions/r-22b8e830-05a1-441b-8200-4858ea26bbda.md",
+  "body_sha256": "40090be87e0590a6bf8dac9ff1fe2673fb759fc2db059c7a066b30d6e7b32911",
+  "created_at": "2026-09-06T02:34:24.737Z",
+  "created_by": "github:BillShiyaoZhang",
+  "change_note": "初始提问"
+}

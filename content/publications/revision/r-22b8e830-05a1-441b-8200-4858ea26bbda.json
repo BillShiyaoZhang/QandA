@@ -1,0 +1,13 @@
+{
+  "schema_version": 1,
+  "entity_type": "revision",
+  "entity_id": "r-22b8e830-05a1-441b-8200-4858ea26bbda",
+  "state": "published",
+  "reviewed_by": "github-actions[bot]",
+  "reviewed_at": "2026-09-06T02:34:24.749Z",
+  "source_issue_url": "https://github.com/BillShiyaoZhang/QandA/issues/3",
+  "source_updated_at": "2026-09-06T01:04:15Z",
+  "source_body_sha256": "d0d9131350854a0ba25c73da77ca1776017071916b7c0bc94d3ed2b13016cdc7",
+  "withdrawal_reason": "",
+  "intake_method": "github-actions"
+}

@@ -1,0 +1,36 @@
+{
+  "schema_version": 1,
+  "id": "a-9ff98620-388b-4081-97db-36ae604ef5a9",
+  "question_revision_id": "r-22b8e830-05a1-441b-8200-4858ea26bbda",
+  "body_path": "answers/a-9ff98620-388b-4081-97db-36ae604ef5a9/body.md",
+  "body_sha256": "5277e006a1250dc9b3cd7fe24af328f69cbbc50fd8ad56d0c6a76e74ed6cf3ba",
+  "submitted_at": "2026-09-06T02:34:24.737Z",
+  "submitted_by": "github:BillShiyaoZhang",
+  "provenance": {
+    "kind": "community_paste",
+    "source_url": "https://chatgpt.com/share/6a9cbbf3-24b8-83e8-9a5c-5d2ae4496b58",
+    "identity_evidence": "submitter_reported"
+  },
+  "generation": {
+    "provider": null,
+    "channel": null,
+    "display_name": "GPT6",
+    "requested_model": null,
+    "returned_model": null,
+    "declared_version": null,
+    "protocol": null,
+    "generated_at": "2026-09-06",
+    "time_precision": "day",
+    "parameters": null,
+    "tools": "unknown",
+    "finish_state": "unknown"
+  },
+  "context": {
+    "snapshot_id": null,
+    "capture_kind": "unknown",
+    "visible_history_completeness": "unknown",
+    "matches_site_path": "unknown"
+  },
+  "run_id": null,
+  "is_example": false
+}
