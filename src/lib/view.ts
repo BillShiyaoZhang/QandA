@@ -63,7 +63,7 @@ export const answerName = (a: Answer) =>
     : a.generation.display_name ||
       a.generation.returned_model ||
       a.generation.requested_model ||
-      '模型未知';
+      '社区回答';
 export const dateLabel = (a: Answer) =>
   a.generation.generated_at
     ? a.generation.time_precision === 'day'

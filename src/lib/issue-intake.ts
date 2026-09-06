@@ -1,59 +1,16 @@
 import path from 'node:path';
-import { canonical, loadStore, sha256 } from './content';
+import { loadStore, sha256 } from './content';
 import {
   createDraft,
   issueSubmission,
-  parseIssueBody,
+  parseSubmissionForm,
   reviewDraft,
   submissionSchema,
 } from './submissions';
 
 export const repository = 'BillShiyaoZhang/QandA';
-export const publicConsent =
-  '我理解投稿会在 GitHub 公开，并允许项目保留署名、展示和必要格式整理；我有权公开这些内容，且未包含密钥或敏感信息。';
-const metadata = [
-  '模型显示名称',
-  '生成日期',
-  '生成规则（选填）',
-  '工具使用',
-  '生成上下文说明',
-  '原始分享链接',
-];
-export const issueForms = {
-  question: {
-    title: '提个新问题',
-    fields: ['问题标题', '问题正文', '主题标签', '已有答案（选填）', ...metadata, '公开提交确认'],
-  },
-  answer: {
-    title: '提交已有答案',
-    fields: ['问题修订 ID', '答案正文', ...metadata, '公开提交确认'],
-  },
-  'follow-up': {
-    title: '追问这份回答',
-    fields: [
-      '父答案 ID',
-      '问题标题',
-      '问题正文',
-      '主题标签',
-      '已有答案（选填）',
-      ...metadata,
-      '公开提交确认',
-    ],
-  },
-  relation: {
-    title: '建议内容关联',
-    fields: [
-      '来源节点 ID',
-      '目标节点 ID',
-      '关联类型',
-      '关联理由',
-      '来源原文片段',
-      '目标原文片段',
-      '公开提交确认',
-    ],
-  },
-} as const;
-export type IssueKind = keyof typeof issueForms;
+import { issueForms, publicConsent, type IssueKind } from './issue-forms';
+export { issueForms, legacyIssueForms, publicConsent, type IssueKind } from './issue-forms';
 export type IntakeIssue = {
   number: number;
   title: string;
@@ -79,22 +36,18 @@ export function issueKind(title: string, body = ''): IssueKind | undefined {
   );
   if (prefixed) return prefixed;
   // GitHub lets submitters replace the Issue title. Its form is still recognizable.
-  try {
-    const labels = Object.keys(parseIssueBody(body));
-    return (Object.keys(issueForms) as IssueKind[]).find(
-      (kind) => canonical(labels) === canonical(issueForms[kind].fields),
-    );
-  } catch {
-    return undefined;
-  }
+  return (Object.keys(issueForms) as IssueKind[]).find((kind) => {
+    try {
+      parseSubmissionForm(body, kind);
+      return true;
+    } catch {
+      return false;
+    }
+  });
 }
 
 export function automaticSubmission(body: string, kind: IssueKind) {
-  const fields = parseIssueBody(body);
-  if (canonical(Object.keys(fields)) !== canonical(issueForms[kind].fields))
-    throw new Error(
-      '表单字段缺失、顺序改变或正文包含保留字段标题。请保留原表单标题；正文中的同名 ### 标题请放进代码围栏，并闭合所有围栏。',
-    );
+  const fields = parseSubmissionForm(body, kind);
   if (
     fields['公开提交确认'].replace(/^- \[[xX]\] /, '') !== publicConsent ||
     !/^- \[[xX]\] /.test(fields['公开提交确认'])
@@ -107,15 +60,13 @@ export function automaticSubmission(body: string, kind: IssueKind) {
     throw new Error('「工具使用」请选择未知、未使用或使用过。');
   if (kind === 'relation' && !['主题相关', '观点支持', '观点冲突'].includes(fields['关联类型']))
     throw new Error('请选择表单提供的关联类型。');
-  const input = issueSubmission(body, kind) as Record<string, unknown>;
+  const input = issueSubmission(body, kind, fields) as Record<string, unknown>;
   for (const key of ['model_name', 'generated_on', 'source_url'] as const) {
     // A missing selection is not evidence that no tool was used.
     if (typeof input[key] === 'string' && /^(未知|unknown|none)$/i.test(input[key]))
       input[key] = null;
   }
   const sub = submissionSchema.parse(input);
-  if ((kind === 'question' || kind === 'follow-up') && !sub.title?.trim())
-    throw new Error('请填写问题标题。');
   return sub;
 }
 

@@ -8,6 +8,7 @@ import {
   automaticSubmission,
   collectIssue,
   issueForms,
+  legacyIssueForms,
   publicConsent,
   repository,
   type IntakeIssue,
@@ -23,12 +24,16 @@ function fixture(t: any) {
   t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
   return { root, drafts: path.join(dir, 'drafts') };
 }
-function body(kind: IssueKind, values: Record<string, string> = {}) {
+function body(kind: IssueKind, values: Record<string, string> = {}, legacy = false) {
   const fields: Record<string, string> = {
     问题标题: '一个社区问题',
     问题正文: '为什么？\n\n### 普通标题\n\n保留 Markdown。',
     答案正文: '社区回答',
     '已有答案（选填）': '附带回答',
+    回答位置: 'https://billshiyaozhang.github.io/QandA/questions/q-001/revisions/q-001.r1/',
+    追问位置: 'https://billshiyaozhang.github.io/QandA/answers/a-001-a/',
+    来源内容: 'https://billshiyaozhang.github.io/QandA/answers/a-001-a/',
+    另一段内容: 'https://billshiyaozhang.github.io/QandA/answers/a-001-b/',
     '问题修订 ID': 'q-001.r1',
     '父答案 ID': 'a-001-a',
     '来源节点 ID': 'a-001-a',
@@ -38,7 +43,7 @@ function body(kind: IssueKind, values: Record<string, string> = {}) {
     公开提交确认: `- [x] ${publicConsent}`,
     ...values,
   };
-  return issueForms[kind].fields
+  return (legacy ? legacyIssueForms : issueForms)[kind].fields
     .map((label) => `### ${label}\n\n${fields[label] || '_No response_'}`)
     .join('\n\n');
 }
@@ -136,7 +141,7 @@ test('retry, metadata-only update, lost drafts, and edited successful issues do 
 test('a bad submission is atomic and can be fixed by its author', (t) => {
   const f = fixture(t),
     before = canonical(loadStore(f.root));
-  const bad = issue('follow-up', { 生成日期: '2026-02-30' });
+  const bad = { ...issue('follow-up'), body: body('follow-up', { 生成日期: '2026-02-30' }, true) };
   assert.equal(collectIssue(f.root, f.drafts, bad).status, 'needs-info');
   assert.equal(canonical(loadStore(f.root)), before);
   assert.equal(collectIssue(f.root, f.drafts, issue('follow-up')).status, 'collected');
@@ -169,14 +174,12 @@ test('format, consent, URL, enumeration, and target failures leave no partial co
   const cases: [IssueKind, Record<string, string>][] = [
     ['question', { 公开提交确认: `- [ ] ${publicConsent}` }],
     ['question', { 公开提交确认: '- [x] something else' }],
-    ['question', { 工具使用: 'random choice' }],
-    ['question', { 原始分享链接: 'javascript:alert(1)' }],
-    ['question', { 问题正文: '正文\n### 问题修订 ID\nq-001.r1' }],
+    ['question', { 问题正文: '正文\n### 问题正文\n重复字段' }],
     ['question', { 问题正文: '正文\n```\n没有关闭的围栏' }],
-    ['answer', { '问题修订 ID': 'missing-revision' }],
-    ['follow-up', { '父答案 ID': 'missing-answer' }],
+    ['answer', { 回答位置: 'missing-revision' }],
+    ['follow-up', { 追问位置: 'missing-answer' }],
     ['relation', { 关联类型: '自动认定正确' }],
-    ['relation', { '目标节点 ID': 'a-001-a' }],
+    ['relation', { 另一段内容: 'a-001-a' }],
     [
       'relation',
       { 关联类型: '观点支持', 来源原文片段: '并不存在的原文', 目标原文片段: '也不存在' },
@@ -197,13 +200,17 @@ test('format, consent, URL, enumeration, and target failures leave no partial co
 test('unknown fields stay unknown and fenced form headings remain verbatim', () => {
   const text = '原文\n```markdown\n### 问题标题\n正文中的标题\n```';
   const sub = automaticSubmission(
-    body('question', {
-      问题正文: text,
-      工具使用: 'None',
-      模型显示名称: '未知',
-      生成日期: 'unknown',
-      原始分享链接: '未知',
-    }),
+    body(
+      'question',
+      {
+        问题正文: text,
+        工具使用: 'None',
+        模型显示名称: '未知',
+        生成日期: 'unknown',
+        原始分享链接: '未知',
+      },
+      true,
+    ),
     'question',
   );
   assert.equal(sub.body, text);
@@ -243,6 +250,117 @@ test('archived and withdrawn targets reject new submissions', (t) => {
     fs.writeFileSync(file, JSON.stringify(record));
     const before = canonical(loadStore(f.root));
     assert.equal(collectIssue(f.root, f.drafts, issue('follow-up')).status, 'needs-info');
+    assert.equal(canonical(loadStore(f.root)), before);
+  }
+});
+
+test('all legacy form versions remain collectable after the issue title is changed', (t) => {
+  for (const kind of Object.keys(legacyIssueForms) as IssueKind[]) {
+    const f = fixture(t);
+    const input = { ...issue(kind), title: '自拟标题', body: body(kind, {}, true) };
+    assert.equal(collectIssue(f.root, f.drafts, input).status, 'collected', kind);
+  }
+});
+
+test('form versions preserve headings belonging only to another version', (t) => {
+  for (const legacy of [true, false]) {
+    const f = fixture(t);
+    const answer = legacy
+      ? '完整回答\n\n### 回答位置\n这是回答中的普通标题。\n\n### 来源补充（选填）\n仍是原文。'
+      : '完整回答\n\n### 模型显示名称\n这是讨论对象，不是模型声明。';
+    const result = collectIssue(f.root, f.drafts, {
+      ...issue('answer'),
+      title: '自拟标题',
+      body: body('answer', { 答案正文: answer }, legacy),
+    });
+    assert.equal(result.status, 'collected');
+    const s = loadStore(f.root);
+    const id = result.entityIds!.find((id) => s.answers[id])!;
+    assert.equal(s.bodies[id], answer);
+    assert.equal(s.answers[id].generation.display_name, null);
+  }
+});
+
+test('one question field creates a bounded title and preserves its full body and optional note', (t) => {
+  const f = fixture(t);
+  const original = '# ' + '好奇🌱'.repeat(65) + '\n\n这是完整背景，不应被截短。';
+  const note = '这个问题来自我的一次散步。';
+  const result = collectIssue(
+    f.root,
+    f.drafts,
+    issue('question', {
+      问题正文: original,
+      '已有答案（选填）': '',
+      '来源补充（选填）': note,
+    }),
+  );
+  assert.equal(result.status, 'collected');
+  const s = loadStore(f.root);
+  const q = s.questions[result.entityIds!.find((id) => s.questions[id])!];
+  assert.ok(q.title.length <= 200);
+  assert.equal(Array.from(q.title).length, 90);
+  assert.match(q.title, /…$/);
+  assert.equal(s.bodies[q.current_revision_id!], original);
+  assert.deepEqual(q.tags, []);
+  const annotation = Object.values(s.annotations).find(
+    (n) => n.target_id === q.current_revision_id,
+  )!;
+  assert.ok(s.bodies[annotation.id].includes(note));
+});
+
+test('unstructured source notes do not invent model identity, authorship, or generation conditions', (t) => {
+  const f = fixture(t);
+  const note = '我自己的想法，参考了 AI 的建议。时间不记得了。';
+  const result = collectIssue(f.root, f.drafts, issue('answer', { '来源补充（选填）': note }));
+  assert.equal(result.status, 'collected');
+  const s = loadStore(f.root);
+  const a = s.answers[result.entityIds!.find((id) => s.answers[id])!];
+  assert.equal(a.question_revision_id, 'q-001.r1');
+  assert.equal(a.submitted_by, 'github:contributor');
+  assert.equal(a.generation.display_name, null);
+  assert.equal(a.generation.generated_at, null);
+  assert.equal(a.generation.tools, 'unknown');
+  assert.equal(a.context.snapshot_id, null);
+  assert.equal(a.provenance.identity_evidence, 'unknown');
+  const annotation = Object.values(s.annotations).find((n) => n.target_id === a.id)!;
+  assert.ok(s.bodies[annotation.id].includes(note));
+});
+
+test('invalid position links and empty content cannot publish partial records', (t) => {
+  for (const [kind, values] of [
+    ['question', { 问题正文: ' \n ' }],
+    ['answer', { 答案正文: ' \n ' }],
+    ['answer', { 回答位置: 'https://example.com/answers/q-001.r1/' }],
+    ['answer', { 回答位置: 'https://example.com/questions/wrong/revisions/q-001.r1/' }],
+    ['answer', { 回答位置: 'https://example.com/questions/q-001/' }],
+    ['answer', { 回答位置: 'javascript:alert(1)' }],
+    ['follow-up', { 追问位置: 'https://example.com/questions/q-001/revisions/a-001-a/' }],
+    ['relation', { 来源内容: 'https://example.com/answers/q-001.r1/' }],
+    ['relation', { 另一段内容: 'https://example.com/questions/wrong/revisions/q-001.r1/' }],
+  ] as [IssueKind, Record<string, string>][]) {
+    const f = fixture(t),
+      before = canonical(loadStore(f.root));
+    assert.equal(
+      collectIssue(f.root, f.drafts, issue(kind, values)).status,
+      'needs-info',
+      JSON.stringify(values),
+    );
+    assert.equal(canonical(loadStore(f.root)), before);
+  }
+});
+
+test('legacy structured metadata still validates enums and unsafe source URLs', (t) => {
+  const cases: Record<string, string>[] = [
+    { 工具使用: 'random choice' },
+    { 原始分享链接: 'javascript:alert(1)' },
+  ];
+  for (const values of cases) {
+    const f = fixture(t),
+      before = canonical(loadStore(f.root));
+    assert.equal(
+      collectIssue(f.root, f.drafts, { ...issue(), body: body('question', values, true) }).status,
+      'needs-info',
+    );
     assert.equal(canonical(loadStore(f.root)), before);
   }
 });

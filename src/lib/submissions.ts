@@ -2,6 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { randomUUID } from 'node:crypto';
 import { z } from 'zod';
+import { issueForms, legacyIssueForms, type IssueKind } from './issue-forms';
 import {
   loadStore,
   validateStore,
@@ -92,7 +93,7 @@ export function prepareFiles(
   input: Submission,
   source: Source,
 ): { files: Record<string, string>; summary: string } {
-  const sub = submissionSchema.parse(input),
+  const sub = normalizePositions(s, submissionSchema.parse(input)),
     files: Record<string, string> = {},
     now = new Date().toISOString(),
     author = `github:${source.author}`;
@@ -143,7 +144,7 @@ export function prepareFiles(
       id: qid,
       parent_answer_id: parent,
       current_revision_id: rid,
-      title: sub.title || sub.body.slice(0, 90),
+      title: sub.title?.trim() || questionTitleFromBody(sub.body),
       tags: sub.tags,
       created_at: now,
       created_by: author,
@@ -166,10 +167,17 @@ export function prepareFiles(
     add(`questions/${qid}/question.json`, { ...q, current_revision_id: rid });
   }
   const answerBody = sub.kind === 'answer' ? sub.body : sub.answer_body;
+  let noteTarget: { type: 'revision' | 'answer'; id: string } | undefined = [
+    'question',
+    'follow-up',
+  ].includes(sub.kind)
+    ? { type: 'revision', id: rid }
+    : undefined;
   if (sub.kind === 'answer' && !answerBody?.trim()) throw new Error('请提供答案正文');
   if (answerBody?.trim() && ['question', 'follow-up', 'answer'].includes(sub.kind)) {
     const id = ident('a'),
       bodyPath = `answers/${id}/body.md`;
+    noteTarget = { type: 'answer', id };
     let snapshot: string | null = null;
     if (sub.context_messages?.length) {
       snapshot = ident('ctx');
@@ -243,25 +251,25 @@ export function prepareFiles(
     add(bodyPath, answerBody);
     add(`answers/${id}/meta.json`, a);
     publish('answer', id);
-    if (sub.context_note?.trim()) {
-      const nid = ident('note'),
-        bp = `annotations/${nid}.md`;
-      add(bp, `提交者对生成上下文的说明：\n\n${sub.context_note}`);
-      add(`annotations/${nid}.json`, {
-        schema_version: 1,
-        id: nid,
-        target_type: 'answer',
-        target_id: id,
-        kind: 'note',
-        body_path: bp,
-        body_sha256: sha256(files[bp]),
-        author,
-        created_at: now,
-        evidence_urls: [],
-        scope: '来源说明，未验证实际请求',
-      });
-      publish('annotation', nid);
-    }
+  }
+  if (sub.context_note?.trim() && noteTarget) {
+    const nid = ident('note'),
+      bp = `annotations/${nid}.md`;
+    add(bp, `提交者提供的来源与背景说明：\n\n${sub.context_note}`);
+    add(`annotations/${nid}.json`, {
+      schema_version: 1,
+      id: nid,
+      target_type: noteTarget.type,
+      target_id: noteTarget.id,
+      kind: 'note',
+      body_path: bp,
+      body_sha256: sha256(files[bp]),
+      author,
+      created_at: now,
+      evidence_urls: [],
+      scope: '提交者补充，未经平台核验',
+    });
+    publish('annotation', nid);
   }
   if (sub.kind === 'relation') {
     const ref = (id: string) => {
@@ -493,7 +501,7 @@ export function reviewDraft(
       if (!fs.existsSync(current) || sha256(fs.readFileSync(current, 'utf8')) !== expected)
         throw new Error('目标内容自导入后已变化；使用 --refresh 重新导入并审阅');
     }
-    const sub = draft.submission;
+    const sub = normalizePositions(s, draft.submission);
     if (sub.kind === 'revision') {
       const q = s.questions[sub.question_id!];
       if (!q || !published(s, 'question', q.id) || isArchived(s, q.id))
@@ -582,6 +590,11 @@ export function reviewDraft(
   }
 }
 const issueLabels = [
+  '回答位置',
+  '追问位置',
+  '来源内容',
+  '另一段内容',
+  '来源补充（选填）',
   '问题标题',
   '问题正文',
   '主题标签',
@@ -603,7 +616,63 @@ const issueLabels = [
   '目标原文片段',
   '公开提交确认',
 ];
-export function parseIssueBody(body: string): Record<string, string> {
+/** Use only the submitted body, never the editable GitHub issue title. */
+export function questionTitleFromBody(body: string) {
+  const first =
+    body
+      .trim()
+      .split(/\r?\n/)
+      .find((line) => line.trim()) || '';
+  const plain = first.replace(/^\s{0,3}#{1,6}\s+/, '').trim() || body.trim();
+  const chars = Array.from(plain);
+  return chars.length > 90 ? chars.slice(0, 89).join('') + '…' : plain;
+}
+/** Positions are local references. Links are parsed only, never fetched. */
+export function submissionPosition(
+  value: string | null | undefined,
+  s: Store,
+  expected?: 'revision' | 'answer',
+): string | null {
+  const text = value?.trim();
+  if (!text) return null;
+  if (/^[a-zA-Z0-9][a-zA-Z0-9._-]{0,119}$/.test(text)) return text;
+  let u: URL;
+  try {
+    u = new URL(text);
+  } catch {
+    throw new Error('请从网站选择投稿位置，或粘贴具体问题版本、回答的完整链接。');
+  }
+  if (!['http:', 'https:'].includes(u.protocol) || u.username || u.password || u.search || u.hash)
+    throw new Error('请使用具体问题版本或回答的固定链接。');
+  const match =
+    /\/(?:answers\/([a-zA-Z0-9][a-zA-Z0-9._-]{0,119})|questions\/[a-zA-Z0-9][a-zA-Z0-9._-]{0,119}\/revisions\/([a-zA-Z0-9][a-zA-Z0-9._-]{0,119}))\/?$/.exec(
+      u.pathname,
+    );
+  if (!match) throw new Error('请使用具体问题版本或回答的固定链接。');
+  const type = match[1] ? 'answer' : 'revision';
+  const id = match[1] || match[2];
+  if (expected && expected !== type) throw new Error('链接中的内容类型与投稿位置不符。');
+  if (type === 'answer' && !s.answers[id]) throw new Error('链接中的回答不存在。');
+  if (type === 'revision') {
+    const questionId = /\/questions\/([^/]+)\/revisions\//.exec(u.pathname)?.[1];
+    if (!s.revisions[id] || s.revisions[id].question_id !== questionId)
+      throw new Error('链接中的问题与所选问题版本不符。');
+  }
+  return id;
+}
+function normalizePositions(s: Store, sub: Submission): Submission {
+  return {
+    ...sub,
+    question_revision_id: submissionPosition(sub.question_revision_id, s, 'revision'),
+    parent_answer_id: submissionPosition(sub.parent_answer_id, s, 'answer'),
+    source_id: submissionPosition(sub.source_id, s),
+    target_id: submissionPosition(sub.target_id, s),
+  };
+}
+export function parseIssueBody(
+  body: string,
+  labels: readonly string[] = issueLabels,
+): Record<string, string> {
   const fields: Record<string, string> = {};
   let current: string | null = null,
     lines: string[] = [],
@@ -624,7 +693,7 @@ export function parseIssueBody(body: string): Record<string, string> {
       continue;
     }
     const match = !fence ? /^###\s+(.+?)\s*$/.exec(line) : null;
-    if (match && issueLabels.includes(match[1])) {
+    if (match && labels.includes(match[1])) {
       flush();
       current = match[1];
       if (Object.hasOwn(fields, current))
@@ -634,15 +703,44 @@ export function parseIssueBody(body: string): Record<string, string> {
   flush();
   return fields;
 }
-export function issueSubmission(body: string, kind: Submission['kind']): unknown {
-  const f = parseIssueBody(body);
+/** Scope reserved headings to the actual form version, preserving other Markdown headings. */
+export function parseSubmissionForm(body: string, kind: IssueKind): Record<string, string> {
+  const matches: Record<string, string>[] = [];
+  for (const forms of [issueForms, legacyIssueForms]) {
+    try {
+      const fields = parseIssueBody(body, forms[kind].fields);
+      if (canonical(Object.keys(fields)) === canonical(forms[kind].fields)) matches.push(fields);
+    } catch {
+      /* Try the other supported version. */
+    }
+  }
+  if (matches.length !== 1)
+    throw new Error(
+      '表单字段缺失、顺序改变或正文包含同名字段标题。请保留表单标题；正文中与此表单同名的 ### 标题请放进闭合的代码围栏。',
+    );
+  return matches[0];
+}
+export function issueSubmission(
+  body: string,
+  kind: Submission['kind'],
+  fields?: Record<string, string>,
+): unknown {
+  let f = fields;
+  if (!f && Object.hasOwn(issueForms, kind)) {
+    try {
+      f = parseSubmissionForm(body, kind as IssueKind);
+    } catch {
+      /* Manual legacy imports also accept partial forms. */
+    }
+  }
+  f ||= parseIssueBody(body);
   return {
     kind,
     title: f['问题标题'] || null,
     body: f[kind === 'answer' ? '答案正文' : '问题正文'] || null,
     answer_body: kind === 'answer' ? null : f['已有答案（选填）'] || null,
-    question_revision_id: f['问题修订 ID'] || null,
-    parent_answer_id: f['父答案 ID'] || null,
+    question_revision_id: f['回答位置'] || f['问题修订 ID'] || null,
+    parent_answer_id: f['追问位置'] || f['父答案 ID'] || null,
     tags: (f['主题标签'] || '')
       .split(/[,，]/)
       .map((s) => s.trim())
@@ -652,10 +750,10 @@ export function issueSubmission(body: string, kind: Submission['kind']): unknown
     generation_protocol: f['生成规则（选填）'] || null,
     tools:
       ({ 未使用: 'none', 使用过: 'used' } as Record<string, string>)[f['工具使用']] || 'unknown',
-    context_note: f['生成上下文说明'] || null,
+    context_note: f['来源补充（选填）'] || f['生成上下文说明'] || null,
     source_url: f['原始分享链接'] || null,
-    source_id: f['来源节点 ID'] || null,
-    target_id: f['目标节点 ID'] || null,
+    source_id: f['来源内容'] || f['来源节点 ID'] || null,
+    target_id: f['另一段内容'] || f['目标节点 ID'] || null,
     relation_type:
       ({ 观点支持: 'supports', 观点冲突: 'conflicts_with' } as Record<string, string>)[
         f['关联类型']

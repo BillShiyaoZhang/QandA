@@ -13,28 +13,12 @@ const input = (id: string, label: string, required = false, description?: string
   attributes: { label, ...(description ? { description } : {}) },
   validations: { required },
 });
-const metadata = [
-  input('model_name', '模型显示名称', false, '不知道时留空；请按界面原样填写。'),
-  input('generated_on', '生成日期', false, '只在知道时填写 YYYY-MM-DD；不要求精确时间。'),
-  text(
-    'generation_protocol',
-    '生成规则（选填）',
-    false,
-    '如果曾统一约定系统指令、生成条件或操作步骤，可粘贴原文；不知道时留空。',
-  ),
-  {
-    type: 'dropdown',
-    id: 'tools',
-    attributes: { label: '工具使用', options: ['未知', '未使用', '使用过'] },
-  },
-  text(
-    'context_note',
-    '生成上下文说明',
-    false,
-    '可说明原始对话、记忆或联网情况。未提供的实际输入保持未知。',
-  ),
-  input('source_url', '原始分享链接', false, '只提交有权公开的 http(s) 链接。'),
-];
+const sourceNote = text(
+  'context_note',
+  '来源补充（选填）',
+  false,
+  '可以写“我自己的想法”、AI 名称、参考链接，或实际提问与背景；知道多少写多少，不清楚就留空。',
+);
 const consent = {
   type: 'checkboxes',
   id: 'public_consent',
@@ -52,7 +36,7 @@ const intro = {
   type: 'markdown',
   attributes: {
     value:
-      '投稿在 GitHub 公开，通过格式和引用检查后自动收录到网站，无需逐条人工审批。平台归集原文与来源，不核实观点；未知信息可以留空。请保留表单标题，正文中同名的 ### 标题请放入闭合的代码围栏。',
+      '投稿在 GitHub 公开，通过格式和引用检查后自动收录到网站，无需逐条人工审批。写下问题或回答即可，来源补充可以留空。不需要再修改上方已经填好的 Issue 标题。请保留表单标题，正文中同名的 ### 标题请放入闭合的代码围栏。',
   },
 };
 const forms = [
@@ -61,26 +45,34 @@ const forms = [
     name: '提个新问题',
     description: '保存一个值得继续探索的问题，也可以附带已有答案。',
     body: [
-      input('title', '问题标题', true),
-      text('body', '问题正文', true),
-      input('tags', '主题标签', false, '用逗号分隔。'),
+      text(
+        'body',
+        '问题正文',
+        true,
+        '直接写下你想问的事，第一行会用作标题；背景可以接着写，不用重复填写。',
+      ),
       text('answer_body', '已有答案（选填）'),
-      ...metadata,
+      sourceNote,
     ],
   },
   {
     file: 'submit-answer',
     name: '提交已有答案',
-    description: '向一个明确的问题版本提交已经生成的回答。',
+    description: '分享自己的回答，或一份已有的 AI 回答。',
     body: [
       input(
         'question_revision_id',
-        '问题修订 ID',
+        '回答位置',
         true,
-        '从网站问题版本页面点击投稿可自动填入；请勿改为“最新版”。',
+        '网站已自动填写，无需修改。也可粘贴具体问题版本的完整链接。',
       ),
-      text('body', '答案正文', true, '请保留原文。不同措辞的实际提问，请在上下文说明中写出。'),
-      ...metadata,
+      text(
+        'body',
+        '答案正文',
+        true,
+        '可以写自己的想法，也可以粘贴已有回答。引用他人或 AI 内容时，可在来源补充中注明。',
+      ),
+      sourceNote,
     ],
   },
   {
@@ -88,12 +80,20 @@ const forms = [
     name: '追问这份回答',
     description: '针对具体答案继续提问，创建一个新分支。',
     body: [
-      input('parent_answer_id', '父答案 ID', true),
-      input('title', '问题标题', true),
-      text('body', '问题正文', true),
-      input('tags', '主题标签'),
+      input(
+        'parent_answer_id',
+        '追问位置',
+        true,
+        '网站已自动填写，无需修改。也可粘贴所追问回答的完整链接。',
+      ),
+      text(
+        'body',
+        '问题正文',
+        true,
+        '直接写下你想问的事，第一行会用作标题；背景可以接着写，不用重复填写。',
+      ),
       text('answer_body', '已有答案（选填）'),
-      ...metadata,
+      sourceNote,
     ],
   },
   {
@@ -101,12 +101,21 @@ const forms = [
     name: '建议内容关联',
     description: '提出跨问题或跨分支的连接，并说明理由。',
     body: [
-      input('source_id', '来源节点 ID', true, '使用答案 ID 或问题修订 ID。'),
-      input('target_id', '目标节点 ID', true),
+      input('source_id', '来源内容', true, '网站已自动填写，无需修改。'),
+      input(
+        'target_id',
+        '另一段内容',
+        true,
+        '在网站选择内容会自动填写，也可粘贴具体问题版本或回答的完整链接。',
+      ),
       {
         type: 'dropdown',
         id: 'relation_type',
-        attributes: { label: '关联类型', options: ['主题相关', '观点支持', '观点冲突'] },
+        attributes: {
+          label: '关联类型',
+          options: ['主题相关', '观点支持', '观点冲突'],
+          default: 0,
+        },
         validations: { required: true },
       },
       text(

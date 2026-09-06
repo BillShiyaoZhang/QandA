@@ -242,7 +242,7 @@ function renderDetail(d: Detail) {
     reader.append(
       el(
         'p',
-        `${self?.name || '模型未知'} · ${self?.date || '生成时间未知'} · ${self?.context || '生成上下文未知'}`,
+        `${self?.name || '社区回答'} · ${self?.date || '生成时间未知'} · ${self?.context || '生成上下文未知'}`,
         'muted small-text',
       ),
     );

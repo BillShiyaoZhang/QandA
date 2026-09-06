@@ -5,19 +5,20 @@ body:
   - type: markdown
     attributes:
       value: "投稿在 GitHub
-        公开，通过格式和引用检查后自动收录到网站，无需逐条人工审批。平台归集原文与来源，不核实观点；未知信息可以留空。请保留表单标题，正文中同名的
-        ### 标题请放入闭合的代码围栏。"
+        公开，通过格式和引用检查后自动收录到网站，无需逐条人工审批。写下问题或回答即可，来源补充可以留空。不需要再修改上方已经填好的 Issue
+        标题。请保留表单标题，正文中同名的 ### 标题请放入闭合的代码围栏。"
   - type: input
     id: source_id
     attributes:
-      label: 来源节点 ID
-      description: 使用答案 ID 或问题修订 ID。
+      label: 来源内容
+      description: 网站已自动填写，无需修改。
     validations:
       required: true
   - type: input
     id: target_id
     attributes:
-      label: 目标节点 ID
+      label: 另一段内容
+      description: 在网站选择内容会自动填写，也可粘贴具体问题版本或回答的完整链接。
     validations:
       required: true
   - type: dropdown
@@ -28,6 +29,7 @@ body:
         - 主题相关
         - 观点支持
         - 观点冲突
+      default: 0
     validations:
       required: true
   - type: textarea
