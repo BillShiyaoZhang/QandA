@@ -1,6 +1,6 @@
 ---
 import Layout from '../../../layouts/Layout.astro';
-import QuestionView from '../../../components/QuestionView.astro';
+import ExplorationView from '../../../components/ExplorationView.astro';
 import { getContent } from '../../../lib/view';
 export function getStaticPaths() {
   return Object.values(getContent().questions).map((q) => ({
@@ -11,4 +11,4 @@ export function getStaticPaths() {
 const { q } = Astro.props;
 ---
 
-<Layout title={q.title} active="questions"><QuestionView questionId={q.id} /></Layout>
+<Layout title={q.title} active="questions" wide><ExplorationView questionId={q.id} indexable /></Layout>

@@ -61,12 +61,12 @@ const latest = Object.values(s.questions)
                           {q.tags.map((tag) => (
                             <span class="tag">{tag}</span>
                           ))}
-                          <span>{aids.length ? `${aids.length} 份答案` : '等待回答'}</span>
+                          <span>{aids.length ? `本题共 ${aids.length} 份答案 · 全部版本` : '等待回答'}</span>
                           {q.is_example && <span>开发样例</span>}
                         </div>
                       </>
                     </div>
-                    <span class="row-arrow">↗</span>
+                    <span class="row-arrow small-text">分支图 ↗</span>
                   </>
                 </div>
               </a>

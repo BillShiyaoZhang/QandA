@@ -55,7 +55,7 @@ import { url } from '../lib/view';
         </div><div class="actions"><a class="button small" id="open-right">打开完整记录 ↗</a></div>
       </article>
     </div>
-  </div><noscript><p>并排比较需要 JavaScript；你可以从问题页面分别打开各份回答。</p></noscript
+  </div><p id="compare-recovery" hidden><a class="button" href={url('')}>从问题档案重新选择</a></p><noscript><p>并排比较需要 JavaScript；你可以从问题页面分别打开各份回答。</p></noscript
   ></Layout
 >
 <script>
@@ -149,6 +149,8 @@ import { url } from '../lib/view';
   async function load() {
     const token = ++seq;
     status.hidden = false;
+    status.className = 'loading';
+    document.getElementById('compare-recovery')!.hidden = true;
     status.textContent = '正在读取两份答案…';
     const params = new URLSearchParams(location.search);
     try {
@@ -162,14 +164,22 @@ import { url } from '../lib/view';
       render('left', left);
       render('right', right);
       conditions();
-      (document.getElementById('back-question') as HTMLAnchorElement).href =
-        `${base}questions/${left.question.id}/`;
+      const back = document.getElementById('back-question') as HTMLAnchorElement;
+      back.href = `${base}questions/${left.question.id}/?focus=${left.answer.id}`;
+      back.textContent = '返回分支图';
+      const returnPath = params.get('return');
+      if (returnPath) {
+        const destination = new URL(returnPath, location.origin);
+        if (destination.origin === location.origin && (destination.pathname.startsWith(`${base}questions/`) || destination.pathname.startsWith(`${base}explore/`))) back.href = destination.href;
+      }
       status.hidden = true;
       app.hidden = false;
     } catch (e) {
+      if (token !== seq) return;
       status.className = 'error';
       status.textContent = e instanceof Error ? e.message : '比较加载失败';
       app.hidden = true;
+      document.getElementById('compare-recovery')!.hidden = false;
     }
   }
   for (const side of ['left', 'right'])

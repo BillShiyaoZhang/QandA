@@ -1,0 +1,47 @@
+---
+import { getContent, url, nodeDetail, markdown } from '../lib/view';
+import { rootId } from '../lib/graph';
+interface Props { questionId: string; indexable?: boolean }
+const { questionId, indexable = false } = Astro.props;
+const s = getContent();
+const q = s.questions[questionId];
+const root = rootId(s, q.id);
+const d = nodeDetail(s, q.id)!;
+const allQuestions = Object.values(s.questions).filter((item) => rootId(s, item.id) === root);
+const questionIds = new Set(allQuestions.map((item) => item.id));
+const answerCount = Object.values(s.answers).filter((a) => questionIds.has(s.revisions[a.question_revision_id].question_id)).length;
+const recordUrl = d.revision ? url(`questions/${q.id}/revisions/${d.revision.id}/`) : null;
+---
+
+<nav class="breadcrumb" aria-label="问题位置"><a href={url('')}>问题档案</a><span aria-hidden="true">›</span><span>分支探索</span></nav>
+<div class="page-heading exploration-heading">
+  <div><h1>{q.title}</h1><div class="meta-line"><span>{allQuestions.length} 个问题</span><span>{answerCount} 份回答</span><span>整棵树 · 全部版本</span>{q.tags.map((tag) => <span class="tag">{tag}</span>)}</div></div>
+  <a class="button small" id="exploration-root" href={url(`questions/${root}/`)} hidden={q.id === root}>回到起始问题</a>
+</div>
+<div class="exploration-mobile-nav"><button class="button small" id="mobile-tree" aria-expanded="true" aria-controls="tree-panel">收起分支图</button><button class="button small" id="mobile-reading">阅读当前节点 ↓</button></div>
+<div class="tree-layout" id="explorer" data-root={root} data-initial={q.id} data-base={url('')}>
+  <aside class="panel tree-panel mobile-open" id="tree-panel" aria-label="分支导航">
+    <div class="tree-tools">
+      <div class="view-switch" role="group" aria-label="分支显示方式"><button id="view-graph" aria-pressed="true" class="button small">分支图</button><button id="view-list" aria-pressed="false" class="button small">树目录</button></div>
+      <button class="button small" id="locate-current">定位当前</button><button class="button small" id="collapse-tree">收起其他分支</button>
+    </div>
+    <p class="tree-help small-text muted">问 → 答 → 追问 · 点击节点阅读</p>
+    <div id="tree-status" class="loading" role="status">正在加载分支…</div>
+    <div id="branch-graph" class="branch-graph" aria-label="问题与回答的分支图"></div>
+    <ul class="tree-list" id="tree-list" aria-label="探索分支" hidden></ul>
+    <button class="button small tree-showmore" id="more-nodes" hidden>显示更多节点</button>
+  </aside>
+  <section class="reading" id="tree-reading" aria-live="polite" aria-label="当前节点内容" tabindex="-1">
+    <article data-pagefind-body={indexable && !d.withdrawn ? true : undefined} data-pagefind-meta="type:问题">
+      <div class="eyebrow">{q.parent_answer_id ? '追问' : '起始问题'}</div><h2>{q.id === root ? '提问原文' : q.title}</h2>
+      {d.archived && <p class="notice warning">本分支已归档，保留阅读，暂不接收新内容。</p>}
+      {d.withdrawn ? <p class="notice warning">此内容已撤回，位置保留以便继续阅读后续追问。</p> : <div class="prose" set:html={markdown(d.body)} />}
+      <div class="actions">{!d.withdrawn && !d.archived && d.revision && <a class="button primary" href={url(`contribute/?kind=answer&revision=${d.revision.id}`)}>提交本题答案</a>}{recordUrl && <a class="button small" href={recordUrl}>提问原文与版本</a>}</div>
+      {!recordUrl && d.revisions.length > 0 && <nav class="toolbar" aria-label="历史提问">{d.revisions.map((r) => <a href={url(`questions/${q.id}/revisions/${r.id}/`)}>{r.label}{r.withdrawn ? ' · 已撤回' : ''}</a>)}</nav>}
+      <h3 class="section">这一版的回答 · {d.answers.length}</h3>
+      {d.answers.length ? d.answers.map((a, i) => <a class="recent-item" href={url(`answers/${a.id}/`)}>回答 {i + 1} · {a.withdrawn ? '已撤回' : a.name}<span>{a.summary}</span>阅读全文 →</a>) : <p class="muted">{d.withdrawn ? '可从分支图继续访问历史答案。' : '还没有回答。可以提交一份已有答案，让探索开始。'}</p>}
+    </article>
+  </section>
+</div>
+<noscript><p class="notice">分支交互需要 JavaScript。上方仍可阅读全文，{recordUrl && <a href={recordUrl}>查看各版提问与回答</a>}。</p></noscript>
+<script>import '../scripts/explorer';</script>

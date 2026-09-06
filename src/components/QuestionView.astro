@@ -1,6 +1,6 @@
 ---
 import { getContent, url, markdown, answerName, dateLabel, contextLabel } from '../lib/view';
-import { rootId, isArchived, visibleRef } from '../lib/graph';
+import { isArchived, visibleRef } from '../lib/graph';
 import { published } from '../lib/content';
 import Breadcrumb from './Breadcrumb.astro';
 import Relations from './Relations.astro';
@@ -13,7 +13,7 @@ const s = getContent();
 const q = s.questions[questionId];
 const rid = revisionId || q.current_revision_id || '';
 const r = s.revisions[rid];
-const revisions = Object.values(s.revisions).filter((r) => r.question_id === q.id);
+const revisions = Object.values(s.revisions).filter((r) => r.question_id === q.id).sort((a,b) => Date.parse(a.created_at) - Date.parse(b.created_at) || a.id.localeCompare(b.id));
 const answers = Object.values(s.answers).filter((a) => a.question_revision_id === rid).sort((a,b)=>Date.parse(a.submitted_at)-Date.parse(b.submitted_at));
 const visibleAnswers=answers.filter(a=>visibleRef(s,{entity_type:'answer',entity_id:a.id}));
 const withdrawn = !published(s, 'question', q.id) || !published(s, 'revision', rid);
@@ -21,16 +21,17 @@ const archived = isArchived(s, q.id);
 const notes = Object.values(s.annotations).filter(
   (n) => n.target_id === q.id || n.target_id === rid,
 );
-const pathRoot = rootId(s, q.id);
 ---
 
 <Breadcrumb s={s} questionId={q.id} revisionId={rid || undefined} /><div class="detail-grid">
   <div>
     <article
       class="reading"
-      data-pagefind-body={withdrawn ? undefined : true}
-      data-pagefind-meta="type:问题"
+      data-pagefind-body={!withdrawn && rid !== q.current_revision_id ? true : undefined}
+      data-pagefind-ignore={rid === q.current_revision_id ? true : undefined}
+      data-pagefind-meta="type:历史提问"
     >
+      <span data-pagefind-meta={`explore_url:${url(`questions/${q.id}/?focus=${rid}`)}`} aria-hidden="true"></span>
       <div class="meta-line">
         <span class="tag green">{q.parent_answer_id ? '继续追问' : '起始问题'}</span>{
           q.is_example && <span>开发样例</span>
@@ -44,7 +45,7 @@ const pathRoot = rootId(s, q.id);
       }<div class="toolbar">{q.tags.map((t) => <span class="tag">{t}</span>)}</div><div
         class="actions"
       >
-        <a class="button" href={url(`explore/${pathRoot}/?focus=${rid || q.id}`)}>查看探索树 ↗</a>{
+        <a class="button" href={url(`questions/${q.id}/?focus=${rid || q.id}`)}>返回分支图 ↗</a>{
           !archived && !withdrawn && (
             <a class="button primary" href={url(`contribute/?kind=answer&revision=${rid}`)}>
               提交本题答案
@@ -63,13 +64,13 @@ const pathRoot = rootId(s, q.id);
             <>
               <summary>问题修订 · {revisions.length} 版</summary>
               <div class="toolbar">
-                {revisions.map((v) => (
+                {revisions.map((v, index) => (
                   <a
                     class:list={['pill-link', v.id === rid && 'active']}
                     href={url(`questions/${q.id}/revisions/${v.id}/`)}
                     aria-current={v.id === rid ? 'page' : undefined}
                   >
-                    {v.id.split('.').at(-1)}
+                    第 {index + 1} 版
                     {v.id === q.current_revision_id ? ' · 当前' : ''}
                   </a>
                 ))}
@@ -175,7 +176,7 @@ const pathRoot = rootId(s, q.id);
     <div class="sidebar-card">
       <h2>沿着问题继续</h2><p class="small-text muted">
         本题的不同回答是平级的。每份回答下面，可以继续提出新的问题。
-      </p><a class="button small" href={url(`explore/${pathRoot}/?focus=${q.id}`)}>定位当前分支</a>
+      </p><a class="button small" href={url(`questions/${q.id}/?focus=${rid || q.id}`)}>定位当前分支</a>
     </div>{
       q.is_example && (
         <div class="notice">

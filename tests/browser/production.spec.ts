@@ -22,6 +22,17 @@ test('production build reflects the real content library and supports an empty a
     await page.goto(`${base}/search/`);
     await expect(page.locator('#search-status')).toContainText('还没有可搜索的问题');
     await expect(page.locator('#search input')).toHaveCount(0);
+  } else {
+    await page.locator('.question-row').first().click();
+    await expect(page.locator('#branch-graph')).toBeVisible();
+    await expect(page.locator('#tree-status')).toBeHidden();
+    await expect(page.locator('.tree-row.current')).toHaveAttribute('data-node-id', roots[0].id);
+    const labels = await page.locator('.branch-link').allTextContents();
+    expect(labels.some((label) => /[ar]-[0-9a-f]{8}-/.test(label))).toBe(false);
+    await page.screenshot({
+      path: `${process.env.TEST_ARTIFACT_DIR || '.local/browser'}/experience-${test.info().project.name}.png`,
+      fullPage: true,
+    });
   }
   await page.goto(`${base}/contribute/?kind=question`);
   await expect(page.getByRole('heading', { name: '让问题继续', exact: true })).toBeVisible();
