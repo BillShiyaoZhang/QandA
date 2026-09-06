@@ -3,7 +3,7 @@ import Layout from '../../layouts/Layout.astro';
 import Breadcrumb from '../../components/Breadcrumb.astro';
 import Relations from '../../components/Relations.astro';
 import { getContent, url, markdown, answerName, dateLabel, contextLabel } from '../../lib/view';
-import { rootId, isArchived, visibleRef, copyPath } from '../../lib/graph';
+import { isArchived, visibleRef, copyPath } from '../../lib/graph';
 export function getStaticPaths() {
   return Object.values(getContent().answers).map((a) => ({
     params: { answerId: a.id },
@@ -14,7 +14,6 @@ const { a } = Astro.props;
 const s = getContent(),
   r = s.revisions[a.question_revision_id],
   q = s.questions[r.question_id],
-  root = rootId(s, q.id),
   withdrawn = !visibleRef(s, { entity_type: 'answer', entity_id: a.id }),
   archived = isArchived(s, q.id);
 const children = Object.values(s.questions).filter((q) => q.parent_answer_id === a.id);
@@ -37,6 +36,7 @@ const snapshot = a.context.snapshot_id ? s.contexts[a.context.snapshot_id] : nul
         data-pagefind-body={withdrawn ? undefined : true}
         data-pagefind-meta="type:答案"
       >
+        <span data-pagefind-meta={`explore_url:${url(`questions/${q.id}/?focus=${a.id}`)}`} aria-hidden="true"></span>
         <div class="eyebrow">ANSWER / {a.id}</div><h1>{q.title}</h1><div class="notice">
           <strong>当时的提问 · {r.id}</strong><div
             class="prose"
@@ -65,7 +65,7 @@ const snapshot = a.context.snapshot_id ? s.contexts[a.context.snapshot_id] : nul
                 ＋ 追问这份回答
               </a>
             )
-          }<a class="button" href={url(`explore/${root}/?focus=${a.id}`)}>在探索树中查看</a>{
+          }<a class="button" href={url(`questions/${q.id}/?focus=${a.id}`)}>返回分支图</a>{
             siblings.length > 0 && !withdrawn && (
               <a class="button" href={url(`compare/?left=${a.id}&right=${siblings[0].id}`)}>
                 比较另一份回答

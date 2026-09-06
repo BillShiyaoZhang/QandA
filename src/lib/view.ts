@@ -105,13 +105,22 @@ export function treeNodes(s: Store, root: string) {
       label: q.title,
       parent: q.parent_answer_id,
       url: url(`questions/${q.id}/`),
+      recordUrl: q.current_revision_id
+        ? url(`questions/${q.id}/revisions/${q.current_revision_id}/`)
+        : undefined,
       withdrawn: !published(s, 'question', q.id),
     });
-    for (const r of Object.values(s.revisions).filter((r) => r.question_id === q.id)) {
+    const revisions = Object.values(s.revisions)
+      .filter((r) => r.question_id === q.id)
+      .sort(
+        (a, b) => Date.parse(a.created_at) - Date.parse(b.created_at) || a.id.localeCompare(b.id),
+      );
+    for (const [index, r] of revisions.entries()) {
       nodes.push({
         id: r.id,
         kind: 'revision',
-        label: r.id.split('.').at(-1),
+        label: `第 ${index + 1} 版${r.id === q.current_revision_id ? ' · 当前' : ''}`,
+        current: r.id === q.current_revision_id,
         parent: q.id,
         url: refUrl(s, 'revision', r.id),
         withdrawn: !visibleRef(s, { entity_type: 'revision', entity_id: r.id }),
@@ -120,7 +129,12 @@ export function treeNodes(s: Store, root: string) {
         nodes.push({
           id: a.id,
           kind: 'answer',
-          label: `${answerName(a)} · ${a.id}`,
+          label: answerName(a),
+          summary: (s.bodies[a.id] || '')
+            .replace(/[#*`>\n]/g, ' ')
+            .trim()
+            .slice(0, 90),
+          date: dateLabel(a),
           parent: r.id,
           url: url(`answers/${a.id}/`),
           withdrawn: !visibleRef(s, { entity_type: 'answer', entity_id: a.id }),
@@ -147,12 +161,58 @@ export function nodeDetail(s: Store, id: string) {
     path: questionPath(s, q.id, rid || undefined),
     answers: Object.values(s.answers)
       .filter((a) => a.question_revision_id === rid)
+      .sort((a, b) => Date.parse(a.submitted_at) - Date.parse(b.submitted_at))
       .map((a) => ({
         id: a.id,
         name: answerName(a),
         date: dateLabel(a),
         context: contextLabel(a),
+        generated_at: a.generation.generated_at,
+        time_precision: a.generation.time_precision,
+        submitted_at: a.submitted_at,
+        withdrawn: !visibleRef(s, { entity_type: 'answer', entity_id: a.id }),
+        summary: (s.bodies[a.id] || '')
+          .replace(/[#*`>\n]/g, ' ')
+          .trim()
+          .slice(0, 140),
+        followups: Object.values(s.questions).filter((q) => q.parent_answer_id === a.id).length,
       })),
+    revisions: Object.values(s.revisions)
+      .filter((v) => v.question_id === q.id)
+      .sort(
+        (a, b) => Date.parse(a.created_at) - Date.parse(b.created_at) || a.id.localeCompare(b.id),
+      )
+      .map((v, index) => ({
+        id: v.id,
+        label: `第 ${index + 1} 版`,
+        current: v.id === q.current_revision_id,
+        withdrawn: !visibleRef(s, { entity_type: 'revision', entity_id: v.id }),
+      })),
+    comparisonAnswers: Object.values(s.answers)
+      .filter(
+        (item) =>
+          s.revisions[item.question_revision_id].question_id === q.id &&
+          visibleRef(s, { entity_type: 'answer', entity_id: item.id }),
+      )
+      .map((item) => ({ id: item.id, revision: item.question_revision_id })),
+    notes: Object.values(s.annotations)
+      .filter((n) => (a ? n.target_id === a.id : n.target_id === q.id || n.target_id === rid))
+      .map((n) => ({ ...n, html: markdown(s.bodies[n.id] || '') })),
+    relations: Object.values(s.relations)
+      .filter((edge) =>
+        [edge.source_ref.entity_id, edge.target_ref.entity_id].includes(a?.id || rid || ''),
+      )
+      .map((edge) => {
+        const other =
+          edge.source_ref.entity_id === (a?.id || rid) ? edge.target_ref : edge.source_ref;
+        return {
+          id: edge.id,
+          type: edge.type,
+          rationale: edge.rationale,
+          title: refTitle(s, other.entity_type, other.entity_id),
+          url: refUrl(s, other.entity_type, other.entity_id),
+        };
+      }),
     followups: a ? Object.values(s.questions).filter((q) => q.parent_answer_id === a.id) : [],
     withdrawn: a
       ? !visibleRef(s, { entity_type: 'answer', entity_id: a.id })

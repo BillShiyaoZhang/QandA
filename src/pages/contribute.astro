@@ -22,7 +22,7 @@ import { github } from '../lib/view';
             ><option value="follow-up">针对一份答案的追问</option><option value="relation"
               >两段内容之间的关联</option
             ></select>
-        </div><div class="field" id="target-field" hidden>
+        </div><div id="contribution-context" class="notice" role="status" hidden></div><div class="field" id="target-field" hidden>
           <label for="contribution-target" id="target-label">目标 ID</label><input
             id="contribution-target"
             name="target"
@@ -139,7 +139,41 @@ import { github } from '../lib/view';
     document.getElementById('target-help')!.textContent = o.help;
     document.getElementById('second-target-field')!.hidden = kind.value !== 'relation';
     document.getElementById('kind-description')!.textContent = o.description;
+    void showContext();
   }
+  let contextRequest = 0;
+  async function showContext() {
+    const token = ++contextRequest;
+    const box = document.getElementById('contribution-context')!;
+    const id = target.value.trim();
+    box.replaceChildren();
+    box.hidden = kind.value === 'question' || !id;
+    if (box.hidden) return;
+    if (!/^[a-zA-Z0-9][a-zA-Z0-9._-]*$/.test(id)) {
+      box.textContent = '请选择已有问题或回答的投稿入口。'; return;
+    }
+    box.textContent = '正在确认投稿位置…';
+    try {
+      const response = await fetch(`${import.meta.env.BASE_URL}data/nodes/${encodeURIComponent(id)}.json`);
+      if (!response.ok) throw Error();
+      const data = await response.json();
+      if (token !== contextRequest) return;
+      box.replaceChildren();
+      const title = document.createElement('strong');
+      title.textContent = data.question.title;
+      const description = document.createElement('p');
+      const purpose = kind.value === 'relation' ? '为这段内容提出关联' : data.answer ? '针对这份回答继续追问' : '为这一版提问提交答案';
+      description.textContent = `${purpose}：${data.body.slice(0, 160)}`;
+      const back = document.createElement('a');
+      back.href = `${import.meta.env.BASE_URL}questions/${data.question.id}/?focus=${encodeURIComponent(id)}`;
+      back.textContent = '返回这条分支';
+      box.append(title, description, back);
+      if (data.archived || data.withdrawn) {
+        const note = document.createElement('p'); note.textContent = '此位置已归档或撤回，请返回分支选择可投稿的内容。'; box.append(note);
+      }
+    } catch { if (token === contextRequest) box.textContent = '暂时无法确认此位置，请核对下方 ID，或返回原问题重新进入。'; }
+  }
+  target.addEventListener('change', () => void showContext());
   kind.addEventListener('change', () => {
     target.value = '';
     second.value = '';

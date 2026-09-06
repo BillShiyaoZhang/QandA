@@ -49,6 +49,11 @@ const roots = Object.values(s.questions).filter((q) => !q.parent_answer_id);
       element: '#search',
       showSubResults: true,
       showImages: false,
+      processResult: (result: any) => {
+        const destination = result.meta?.explore_url;
+        if (!destination) return result;
+        return { ...result, url: destination, sub_results: result.sub_results?.map((item: any) => ({ ...item, url: destination })) };
+      },
       translations: {
         placeholder: '输入问题、概念或一段文字',
         zero_results: '没有找到相关内容',
