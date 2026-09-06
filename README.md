@@ -2,12 +2,13 @@
 
 把有趣的问题、不同来源的答案、回答后的追问，以及不同探索路径之间的关联保存下来。每份答案固定关联当时的问题版本，追问从一份具体答案继续展开。
 
-首版已经实现静态网站、内容校验、访客投稿表单和维护工具。**正式内容库已清空开发样例**，等待收录真实问题和答案。公开投稿通过 GitHub Issue Forms 进行，需要 GitHub 账号；本项目不自动调用模型。
+已实现静态网站、内容校验、访客投稿表单、自动归集和事后维护工具。公开投稿通过 GitHub Issue Forms 进行，需要 GitHub 账号；通过格式及引用检查后自动收录、发布，无需维护者逐条审批。本项目不自动调用模型，不把收录视为事实核验。
 
 - [设计与可行性分析](docs/design.md)
 - [实现说明](docs/implementation.md)
 - [验证记录与上线验收](docs/verification.md)
 - [投稿与维护流程](CONTRIBUTING.md)
+- [GitHub 自动归集的运行与恢复](docs/automation.md)
 
 ## 本地运行
 
@@ -38,11 +39,11 @@ npm run test:production
 
 答案页面保留实际提问、来源、已知生成条件和提交者提供的上下文。复制路径只包含当前祖先链及所选答案，不包含兄弟答案或横向关联。探索树可折叠、定位和分享，手机上可以切换目录与阅读区。
 
-关联连接具体版本的内容。自动词项检索只产生待审候选；维护者确认理由后才会在局部关系图展示。归档让分支停止接收投稿；撤回隐藏公开站点中的正文并保留可导航的历史位置。
+关联连接具体版本的内容。用户提交的关联通过格式、端点和原文片段检查后展示为「社区提交」，不代表平台确认观点；自动词项检索仍只产生待审候选。归档让分支停止接收投稿；撤回隐藏公开站点中的正文并保留可导航的历史位置。
 
 ## GitHub Pages
 
-工作流已经配置为：PR 运行校验、类型检查、测试、静态构建和浏览器验收；`main` 更新后构建 Pages 产物并部署。Actions 使用固定提交版本，投稿内容不会自动执行，也没有 `pull_request_target` 或收到 Issue 后直接发布的工作流。
+工作流配置为：PR 运行校验、类型检查、测试、静态构建和浏览器验收；`main` 更新后构建 Pages 产物并部署。Issue 新建、修改或重开时，自动归集工作流扫描当前投稿，校验、构建、提交内容，再显式调用 Pages 发布。每 6 小时补扫漏单并重试发布。Actions 使用固定提交版本；Issue 正文作为数据处理，不执行投稿中的脚本、MDX 或 shell。
 
 手动验证 Pages 子路径：
 
@@ -51,7 +52,7 @@ SITE_URL=https://billshiyaozhang.github.io SITE_BASE=/QandA npm run build
 TEST_BASE_PATH=/QandA npm run test:e2e -- site.spec.ts
 ```
 
-当前仓库已由所有者公开并合并首版，Pages 配置使用 GitHub Actions。公开访客可通过 Issues 投稿；收录后随正式内容构建发布。
+当前仓库为公开仓库，Pages 使用 GitHub Actions。标准 Ubuntu runner 对公开仓库免费，不依赖学生 Pro 权益、付费模型或额外服务器。自动化使用短期 `GITHUB_TOKEN`，不需要配置个人 PAT。
 
 `.openai/hosting.json` 另用于 Sites 私有预览，`static.directory` 指向 `dist`。Sites 预览使用根路径构建；GitHub Pages 使用 `/QandA`，两者共用同一套源码。
 

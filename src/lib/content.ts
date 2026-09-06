@@ -271,8 +271,12 @@ export function validateStore(s: Store, baseline?: Store): void {
           `关联片段不存在: ${r.id} → ${ref.entity_id}`,
         );
     if (r.decision === 'confirmed') check(r.decided_by && r.decided_at, `关系缺少确认者: ${r.id}`);
+    if (r.decision === 'submitted') {
+      check(r.origin === 'manual', `自动候选不能作为社区投稿发布: ${r.id}`);
+      check(r.decided_by === null && r.decided_at === null, `社区声明不能冒充人工确认: ${r.id}`);
+    }
     if (published(s, 'relation', r.id)) {
-      check(r.decision === 'confirmed', `未确认关系不能发布: ${r.id}`);
+      check(['submitted', 'confirmed'].includes(r.decision), `未收录关系不能发布: ${r.id}`);
       for (const ref of [r.source_ref, r.target_ref])
         check(status(s, ref.entity_type, ref.entity_id), `关联端点尚未发布: ${r.id}`);
     }

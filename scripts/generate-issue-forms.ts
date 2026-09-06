@@ -1,5 +1,6 @@
 import fs from 'node:fs';
 import YAML from 'yaml';
+import { publicConsent } from '../src/lib/issue-intake';
 const text = (id: string, label: string, required = false, description?: string) => ({
   type: 'textarea',
   id,
@@ -41,8 +42,7 @@ const consent = {
     label: '公开提交确认',
     options: [
       {
-        label:
-          '我理解投稿会在 GitHub 公开，并允许项目保留署名、展示和必要格式整理；我有权公开这些内容，且未包含密钥或敏感信息。',
+        label: publicConsent,
         required: true,
       },
     ],
@@ -52,7 +52,7 @@ const intro = {
   type: 'markdown',
   attributes: {
     value:
-      '感谢贡献。此投稿会先在 GitHub 公开，维护者审核后才进入网站。来源审核不等于事实核验；未知的信息可以留空。',
+      '投稿在 GitHub 公开，通过格式和引用检查后自动收录到网站，无需逐条人工审批。平台归集原文与来源，不核实观点；未知信息可以留空。请保留表单标题，正文中同名的 ### 标题请放入闭合的代码围栏。',
   },
 };
 const forms = [

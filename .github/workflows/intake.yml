@@ -1,0 +1,80 @@
+name: Collect issue submissions
+on:
+  issues:
+    types: [opened, edited, reopened, labeled, unlabeled]
+  schedule:
+    - cron: '23 */6 * * *'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: issue-intake
+  cancel-in-progress: false
+  queue: max
+jobs:
+  collect:
+    if: github.repository == 'BillShiyaoZhang/QandA' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: write
+      issues: write
+    outputs:
+      sha: ${{ steps.commit.outputs.sha }}
+      changed: ${{ steps.commit.outputs.changed }}
+    env:
+      ASTRO_TELEMETRY_DISABLED: '1'
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: main
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: .node-version
+          package-manager-cache: false
+      - run: npm ci
+      - name: Collect current submissions (including any missed events)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: npm run intake
+      - name: Validate append-only changes
+        run: npm run validate -- --base HEAD
+      - name: Verify the collected content builds before saving it
+        env:
+          SITE_URL: https://billshiyaozhang.github.io
+          SITE_BASE: /QandA
+        run: npm run build
+      - name: Commit only content, without overwriting concurrent main changes
+        id: commit
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          git add -- content
+          if git diff --cached --quiet; then
+            echo 'changed=false' >> "$GITHUB_OUTPUT"
+          else
+            git config user.name 'github-actions[bot]'
+            git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+            git commit -m 'Collect community issue submissions'
+            gh auth setup-git
+            git push origin HEAD:main
+            echo 'changed=true' >> "$GITHUB_OUTPUT"
+          fi
+          echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+      - name: Update submission status after the content is saved
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: npm run intake -- --feedback
+  publish:
+    needs: collect
+    # Periodic/manual runs also retry a publication that previously failed after commit.
+    if: always() && needs.collect.outputs.sha != '' && (needs.collect.outputs.changed == 'true' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch')
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    uses: ./.github/workflows/deploy.yml
+    with:
+      content_sha: ${{ needs.collect.outputs.sha }}

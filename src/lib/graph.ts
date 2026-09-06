@@ -146,7 +146,7 @@ export function publicStore(s: Store): Store {
   for (const [id, r] of Object.entries(s.relations))
     if (
       published(s, 'relation', id) &&
-      r.decision === 'confirmed' &&
+      ['submitted', 'confirmed'].includes(r.decision) &&
       visibleRef(s, r.source_ref) &&
       visibleRef(s, r.target_ref)
     )

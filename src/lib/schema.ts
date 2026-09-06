@@ -140,7 +140,7 @@ export const relationSchema = z
     created_at: timestamp,
     method_version: nullableText,
     candidate_score: z.number().min(0).max(1).nullable(),
-    decision: z.enum(['proposed', 'confirmed', 'rejected']),
+    decision: z.enum(['proposed', 'submitted', 'confirmed', 'rejected']),
     decided_by: nullableText,
     decided_at: timestamp.nullable(),
   })
@@ -153,6 +153,7 @@ export const publicationSchema = z
     state: z.enum(['published', 'withdrawn']),
     reviewed_by: z.string().min(1),
     reviewed_at: timestamp,
+    intake_method: z.enum(['manual', 'github-actions']).optional(),
     source_issue_url: safeUrl.nullable(),
     source_updated_at: timestamp.nullable(),
     source_body_sha256: hash.nullable(),
@@ -178,6 +179,7 @@ export const importReceiptSchema = z
     submission_sha256: hash,
     reviewer: z.string(),
     reviewed_at: timestamp,
+    intake_method: z.enum(['manual', 'github-actions']).optional(),
     entity_ids: z.array(z.string()),
   })
   .strict();

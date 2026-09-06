@@ -37,10 +37,10 @@ const parentRef=currentAnswer?{kind:'revision',id:currentAnswer.question_revisio
       class="small-text"
       href={url(`contribute/?kind=relation&source=${nodeIds[0]}`)}>建议关联 ↗</a>
   </div><p class="small-text muted">
-    关联连接不同内容，不改变原来的追问路径。确认关联不等于事实核验。
+    关联连接不同内容，不改变原来的追问路径。社区关联表达提交者的判断，不代表平台核实。
   </p>{
     !items.length ? (
-      <p class="empty">还没有确认的关联。你可以提出一条连接及其理由。</p>
+      <p class="empty">还没有收录的关联。你可以提出一条连接及其理由。</p>
     ) : (
       <>
         {items.map(({ r, fromCurrent, label, href }, index) => (
@@ -56,7 +56,7 @@ const parentRef=currentAnswer?{kind:'revision',id:currentAnswer.question_revisio
             {r.source_excerpt && <blockquote>{r.source_excerpt}</blockquote>}
             {r.target_excerpt && <blockquote>{r.target_excerpt}</blockquote>}
             <span class="muted small-text">
-              关联确认：{r.decided_by} · {r.decided_at?.slice(0, 10)}
+              {r.decision === 'submitted' ? `社区提交：${r.proposed_by} · 自动收录，未经人工确认` : `关联确认：${r.decided_by} · ${r.decided_at?.slice(0, 10)}`}
             </span>
           </article>
         ))}
