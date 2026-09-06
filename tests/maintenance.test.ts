@@ -11,7 +11,7 @@ import { publicStore, copyPath } from '../src/lib/graph';
 function fixture(t: any) {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'qanda-maintain-')),
     root = path.join(dir, 'content');
-  fs.cpSync(path.resolve('content'), root, { recursive: true });
+  fs.cpSync(process.env.CONTENT_DIR!, root, { recursive: true });
   t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
   return { dir, root };
 }

@@ -33,6 +33,10 @@ jobs:
           SITE_BASE: /QandA
         run: npm run build
       - run: npx playwright install --with-deps chromium
+      - name: Check actual publication build
+        env:
+          TEST_BASE_PATH: /QandA
+        run: npm run test:production
       - name: Browser acceptance tests
         env:
           TEST_BASE_PATH: /QandA

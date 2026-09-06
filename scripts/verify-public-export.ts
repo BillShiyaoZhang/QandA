@@ -1,11 +1,14 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import os from 'node:os';
+import { createExampleCorpus } from '../tests/helpers/example-corpus';
 import { execFileSync } from 'node:child_process';
 import { loadStore, validateStore, sha256, canonical, publication, walk } from '../src/lib/content';
-const root = path.resolve('.local/withdrawal-content'),
-  out = path.resolve('.local/withdrawal-dist');
-fs.rmSync(root, { recursive: true, force: true });
-fs.cpSync('content', root, { recursive: true });
+const temporary = fs.mkdtempSync(path.join(os.tmpdir(), 'qanda-withdrawal-'));
+process.on('exit', () => fs.rmSync(temporary, { recursive: true, force: true }));
+const root = path.join(temporary, 'content'),
+  out = path.join(temporary, 'dist');
+createExampleCorpus(root);
 const s = loadStore(root),
   marker = 'WITHDRAWAL_SENTINEL_81a7fc';
 const write = (file: string, data: unknown) => {
@@ -84,7 +87,7 @@ const log = execFileSync(process.execPath, [path.resolve('node_modules/astro', b
   encoding: 'utf8',
   maxBuffer: 10 * 1024 * 1024,
 });
-fs.writeFileSync('.local/withdrawal-build.log', log);
+fs.writeFileSync(path.join(temporary, 'build.log'), log);
 execFileSync(process.execPath, ['node_modules/pagefind/lib/runner/bin.cjs', '--site', out], {
   stdio: 'pipe',
 });

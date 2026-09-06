@@ -7,6 +7,7 @@ const roots = Object.values(s.questions).filter(
   (q) => !q.parent_answer_id && published(s, 'question', q.id),
 );
 const tags = [...new Set(roots.flatMap((q) => q.tags))];
+const hasExamples=roots.some(q=>q.is_example);
 const latest = Object.values(s.questions)
   .filter((q) => q.parent_answer_id && published(s, 'question', q.id))
   .sort((a,b)=>Date.parse(b.created_at)-Date.parse(a.created_at))
@@ -71,7 +72,7 @@ const latest = Object.values(s.questions)
               </a>
             );
           })
-        }<p id="no-results" class="empty" hidden>这个主题暂时没有问题。</p>
+        }{!roots.length && <div class="empty"><h3>还没有问题</h3><p>从你的第一个问题开始，逐步积累答案和追问。</p><a class="button primary" href={url('contribute/?kind=question')}>提个新问题</a></div>}<p id="no-results" class="empty" hidden>这个主题暂时没有问题。</p>
       </div>
     </section>
     <aside class="archive-sidebar">
@@ -99,9 +100,10 @@ const latest = Object.values(s.questions)
             </a>
           ))
         }
-      </div><div class="notice">
+        {!latest.length && <p class="small-text muted">还没有追问。</p>}
+      </div>{hasExamples && <div class="notice">
         当前内容为开发样例，展示阅读、版本和分支结构；模型来源与生成条件如实标为未知。
-      </div>
+      </div>}
     </aside>
   </div></Layout
 >
