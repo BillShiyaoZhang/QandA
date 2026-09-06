@@ -100,8 +100,8 @@ const targets = contributionTargets(getContent());
     const text = document.createElement('p');
     text.textContent = `${kind.value === 'follow-up' ? '针对这份回答继续追问' : item.kind === 'revision' ? '已选问题版本' : '已选回答'}：${item.excerpt}`;
     const link = document.createElement('a');
-    link.href = `${import.meta.env.BASE_URL}${item.path}`;
-    link.textContent = '查看这段内容 ↗';
+    link.href = `${import.meta.env.BASE_URL}questions/${item.questionId}/?focus=${encodeURIComponent(item.id)}`;
+    link.textContent = '返回这条分支';
     box.append(title, text, link);
   }
   function refreshSelection() {

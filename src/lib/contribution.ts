@@ -4,6 +4,7 @@ import { answerName } from './view';
 
 export type ContributionTarget = {
   id: string;
+  questionId: string;
   kind: 'revision' | 'answer';
   title: string;
   label: string;
@@ -25,6 +26,7 @@ export function contributionTargets(s: Store): ContributionTarget[] {
       if (!visibleRef(s, { entity_type: 'revision', entity_id: r.id })) continue;
       targets.push({
         id: r.id,
+        questionId: q.id,
         kind: 'revision',
         title: q.title,
         archived: isArchived(s, q.id),
@@ -40,6 +42,7 @@ export function contributionTargets(s: Store): ContributionTarget[] {
     const title = s.questions[qid].title;
     targets.push({
       id: a.id,
+      questionId: qid,
       kind: 'answer',
       title,
       archived: isArchived(s, qid),
