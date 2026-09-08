@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "id": "note-knowledge-20260908-p035",
+  "target_type": "answer",
+  "target_id": "a-knowledge-20260908-p035",
+  "kind": "note",
+  "body_path": "annotations/note-knowledge-20260908-p035.md",
+  "body_sha256": "721324c1875ed1e6c08ba0f555a3b6bfc9d05696b2e8c7f03054e9e6affc8cbc",
+  "author": "editor:Codex",
+  "created_at": "2026-09-08T07:49:52.461Z",
+  "evidence_urls": [
+    "https://glaad.org/whereweareontv23/glossary-of-terms/",
+    "https://plato.stanford.edu/entries/feminist-body/"
+  ],
+  "scope": "来源核对与编辑说明；不代表平台对全部事实作独立认证"
+}

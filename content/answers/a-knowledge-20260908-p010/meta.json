@@ -1,0 +1,36 @@
+{
+  "schema_version": 1,
+  "id": "a-knowledge-20260908-p010",
+  "question_revision_id": "r-knowledge-20260908-p010",
+  "body_path": "answers/a-knowledge-20260908-p010/body.md",
+  "body_sha256": "36d1181aed57729d72de218144b295c6dc7d7b57a2ce59bd9e13ef23d759deb2",
+  "submitted_at": "2026-09-08T07:49:52.461Z",
+  "submitted_by": "github:BillShiyaoZhang",
+  "provenance": {
+    "kind": "community_export",
+    "source_url": "https://github.com/BillShiyaoZhang/QandA/blob/main/docs/publications/2026-09-08-knowledge.md",
+    "identity_evidence": "unknown"
+  },
+  "generation": {
+    "provider": "OpenAI",
+    "channel": "Codex",
+    "display_name": null,
+    "requested_model": null,
+    "returned_model": null,
+    "declared_version": null,
+    "protocol": "经维护者批准，将既有知识问题按公开来源重新整理；不含具体项目背景。正文为本次编辑稿，非原始聊天逐字转录；具体模型和采样参数未记录。",
+    "generated_at": "2026-09-08",
+    "time_precision": "day",
+    "parameters": null,
+    "tools": "used",
+    "finish_state": "complete"
+  },
+  "context": {
+    "snapshot_id": null,
+    "capture_kind": "unknown",
+    "visible_history_completeness": "unknown",
+    "matches_site_path": "unknown"
+  },
+  "run_id": null,
+  "is_example": false
+}

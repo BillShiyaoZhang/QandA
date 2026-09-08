@@ -1,0 +1,13 @@
+{
+  "schema_version": 1,
+  "entity_type": "question",
+  "entity_id": "q-knowledge-20260908-p084",
+  "state": "published",
+  "reviewed_by": "editor:Codex",
+  "reviewed_at": "2026-09-08T07:49:52.461Z",
+  "source_issue_url": null,
+  "source_updated_at": null,
+  "source_body_sha256": null,
+  "withdrawal_reason": "",
+  "intake_method": "manual"
+}

@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "id": "q-knowledge-20260908-p029",
+  "parent_answer_id": null,
+  "current_revision_id": "r-knowledge-20260908-p029",
+  "title": "没有共同训练过的强化学习智能体，可以用自然语言相互协作吗？",
+  "tags": [
+    "强化学习",
+    "多智能体",
+    "自然语言"
+  ],
+  "created_at": "2026-09-08T07:49:52.461Z",
+  "created_by": "github:BillShiyaoZhang",
+  "state": "active",
+  "copied_from_question_id": null,
+  "is_example": false
+}

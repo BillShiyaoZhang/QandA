@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "id": "note-knowledge-20260908-p131",
+  "target_type": "answer",
+  "target_id": "a-knowledge-20260908-p131",
+  "kind": "note",
+  "body_path": "annotations/note-knowledge-20260908-p131.md",
+  "body_sha256": "408887371acb518a296e01a8da941e5c5faafb80b244a66bd2ffe74b8e2df610",
+  "author": "editor:Codex",
+  "created_at": "2026-09-08T07:49:52.461Z",
+  "evidence_urls": [
+    "https://docs.python.org/3/library/json.html",
+    "https://docs.python.org/3/tutorial/controlflow.html#unpacking-argument-lists"
+  ],
+  "scope": "来源核对与编辑说明；不代表平台对全部事实作独立认证"
+}

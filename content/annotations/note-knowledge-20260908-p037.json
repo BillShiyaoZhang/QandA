@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "id": "note-knowledge-20260908-p037",
+  "target_type": "answer",
+  "target_id": "a-knowledge-20260908-p037",
+  "kind": "note",
+  "body_path": "annotations/note-knowledge-20260908-p037.md",
+  "body_sha256": "ebf856e8256b7390cf84501bbaf34cf0e9c2af0df8cc45c826880a8832424729",
+  "author": "editor:Codex",
+  "created_at": "2026-09-08T07:49:52.461Z",
+  "evidence_urls": [
+    "https://huggingface.co/docs/transformers/main/en/main_classes/tokenizer",
+    "https://github.com/ml-explore/mlx-lm"
+  ],
+  "scope": "来源核对与编辑说明；不代表平台对全部事实作独立认证"
+}

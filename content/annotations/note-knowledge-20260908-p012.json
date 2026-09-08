@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "id": "note-knowledge-20260908-p012",
+  "target_type": "answer",
+  "target_id": "a-knowledge-20260908-p012",
+  "kind": "note",
+  "body_path": "annotations/note-knowledge-20260908-p012.md",
+  "body_sha256": "2d0193086cde8ecba71cb3e73485d134e0fa09dfe662e4159a17fb8c04b36f02",
+  "author": "editor:Codex",
+  "created_at": "2026-09-08T07:49:52.461Z",
+  "evidence_urls": [
+    "https://valtioneuvosto.fi/en/-/1271139/perustulokokeilun-tulokset-tyollisyysvaikutukset-vahaisia-toimeentulo-ja-psyykkinen-terveys-koettiin-paremmaksi?languageId=en_US",
+    "https://www.ilo.org/publications/major-publications/care-work-and-care-jobs-future-decent-work",
+    "https://www.nobelprize.org/prizes/economic-sciences/2009/ostrom/lecture/"
+  ],
+  "scope": "来源核对与编辑说明；不代表平台对全部事实作独立认证"
+}

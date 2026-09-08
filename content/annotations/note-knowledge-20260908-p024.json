@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "id": "note-knowledge-20260908-p024",
+  "target_type": "answer",
+  "target_id": "a-knowledge-20260908-p024",
+  "kind": "note",
+  "body_path": "annotations/note-knowledge-20260908-p024.md",
+  "body_sha256": "e034537a1794a48d153018f493dcc0606bde15e54a9e293b97176141da74fee8",
+  "author": "editor:Codex",
+  "created_at": "2026-09-08T07:49:52.461Z",
+  "evidence_urls": [
+    "https://www.parliament.uk/about/living-heritage/transformingsociety/livinglearning/19thcentury/overview/earlyfactorylegislation/",
+    "https://education-uk.org/documents/acts/1833-factories-act.html",
+    "https://www.nationalarchives.gov.uk/education/resources/1833-factory-act/",
+    "https://www.englishhistoricaldocuments.com/document/getsamplecontentstream/pdf/5412?filename=012.1_OCDTE_2510",
+    "https://www.parliament.uk/about/living-heritage/transformingsociety/livinglearning/19thcentury/overview/coalmines/",
+    "https://www.parliament.uk/about/living-heritage/transformingsociety/livinglearning/19thcentury/overview/laterfactoryleg/"
+  ],
+  "scope": "来源核对与编辑说明；不代表平台对全部事实作独立认证"
+}

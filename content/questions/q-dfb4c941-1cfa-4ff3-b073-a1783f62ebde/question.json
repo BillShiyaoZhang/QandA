@@ -4,7 +4,11 @@
   "parent_answer_id": null,
   "current_revision_id": "r-22b8e830-05a1-441b-8200-4858ea26bbda",
   "title": "基因的不同是怎么导致生殖隔离的？什么机制导致精子不能和卵子结合生出宝宝？",
-  "tags": [],
+  "tags": [
+    "生物学",
+    "遗传学",
+    "演化"
+  ],
   "created_at": "2026-09-06T02:34:24.737Z",
   "created_by": "github:BillShiyaoZhang",
   "state": "active",

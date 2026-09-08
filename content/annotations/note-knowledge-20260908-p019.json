@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "id": "note-knowledge-20260908-p019",
+  "target_type": "answer",
+  "target_id": "a-knowledge-20260908-p019",
+  "kind": "note",
+  "body_path": "annotations/note-knowledge-20260908-p019.md",
+  "body_sha256": "582faa32e550abdb3e9c29e28f198e9ca42cf2b9abfcfc5f9b8d618a6bb013f7",
+  "author": "editor:Codex",
+  "created_at": "2026-09-08T07:49:52.461Z",
+  "evidence_urls": [
+    "https://www.npc.gov.cn/npc/c2/c30834/202306/t20230606_429898.html",
+    "https://www.npc.gov.cn/c2/c30834/202403/t20240308_435614.html",
+    "https://doi.org/10.1111/gove.12393",
+    "https://www.nber.org/papers/w29402",
+    "https://www.journals.uchicago.edu/doi/10.1086/690948"
+  ],
+  "scope": "来源核对与编辑说明；不代表平台对全部事实作独立认证"
+}

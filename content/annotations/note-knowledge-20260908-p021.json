@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "id": "note-knowledge-20260908-p021",
+  "target_type": "answer",
+  "target_id": "a-knowledge-20260908-p021",
+  "kind": "note",
+  "body_path": "annotations/note-knowledge-20260908-p021.md",
+  "body_sha256": "61077fb0c55019c3b242ed76742657bd043db6046b83c0daca005795033ac8f3",
+  "author": "editor:Codex",
+  "created_at": "2026-09-08T07:49:52.461Z",
+  "evidence_urls": [
+    "https://www.ynharari.com/book/sapiens/",
+    "https://www.ynharari.com/book/homo-deus/",
+    "https://www.ynharari.com/book/21-lessons-book/",
+    "https://www.ynharari.com/book/nexus/"
+  ],
+  "scope": "来源核对与编辑说明；不代表平台对全部事实作独立认证"
+}

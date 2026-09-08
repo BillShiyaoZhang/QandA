@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "id": "note-knowledge-20260908-p072",
+  "target_type": "answer",
+  "target_id": "a-knowledge-20260908-p072",
+  "kind": "note",
+  "body_path": "annotations/note-knowledge-20260908-p072.md",
+  "body_sha256": "c5ad00143aece863799c1390eaf608120164fac45c088b66901f47dc20858da9",
+  "author": "editor:Codex",
+  "created_at": "2026-09-08T07:49:52.461Z",
+  "evidence_urls": [
+    "https://docstore.ohchr.org/SelfServices/FilesHandler.ashx?enc=j3guiQd0Hp2byJvITGx2HcxeXZdrqM4IeLGjasXGdMDUF4hnY9iaCr5CAsA7mWka21pAHThmMFo8I%2B59OiVpQQ%3D%3D",
+    "https://social.desa.un.org/sites/default/files/inline-files/COSP%20Information%20Note%20New%20NGO%20Accreditation_0.pdf",
+    "https://digitallibrary.un.org/record/3899396"
+  ],
+  "scope": "来源核对与编辑说明；不代表平台对全部事实作独立认证"
+}

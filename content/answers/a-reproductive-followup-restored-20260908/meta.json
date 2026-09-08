@@ -1,0 +1,36 @@
+{
+  "schema_version": 1,
+  "id": "a-reproductive-followup-restored-20260908",
+  "question_revision_id": "r-knowledge-20260908-p002",
+  "body_path": "answers/a-reproductive-followup-restored-20260908/body.md",
+  "body_sha256": "59b090a46edccd3418a82da08f02b155d201df61e1dc87acdd83a0a4aa66ee58",
+  "submitted_at": "2026-09-08T07:49:52.461Z",
+  "submitted_by": "github:BillShiyaoZhang",
+  "provenance": {
+    "kind": "community_export",
+    "source_url": "https://github.com/BillShiyaoZhang/QandA/blob/main/docs/publications/2026-09-08-knowledge.md",
+    "identity_evidence": "unknown"
+  },
+  "generation": {
+    "provider": "OpenAI",
+    "channel": "ChatGPT",
+    "display_name": null,
+    "requested_model": null,
+    "returned_model": null,
+    "declared_version": null,
+    "protocol": "从原对话恢复的历史回答；实际模型与采样参数未返回。日期按原回合完成时间（UTC）记录。",
+    "generated_at": "2026-09-05",
+    "time_precision": "day",
+    "parameters": null,
+    "tools": "unknown",
+    "finish_state": "complete"
+  },
+  "context": {
+    "snapshot_id": null,
+    "capture_kind": "unknown",
+    "visible_history_completeness": "unknown",
+    "matches_site_path": "unknown"
+  },
+  "run_id": null,
+  "is_example": false
+}

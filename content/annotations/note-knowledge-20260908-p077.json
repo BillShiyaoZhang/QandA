@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "id": "note-knowledge-20260908-p077",
+  "target_type": "answer",
+  "target_id": "a-knowledge-20260908-p077",
+  "kind": "note",
+  "body_path": "annotations/note-knowledge-20260908-p077.md",
+  "body_sha256": "40629fd76c356de5165b8d0053ddf7798949162d46232e93f27ddb6aaee5b5e3",
+  "author": "editor:Codex",
+  "created_at": "2026-09-08T07:49:52.461Z",
+  "evidence_urls": [
+    "https://sys01.lib.hkbu.edu.hk/cmed/cmsd/detail.php?herb_id=D00222",
+    "https://www.sciencedirect.com/science/article/pii/S0378874119301758",
+    "https://ywfx.nifdc.org.cn/CN/10.16155/j.0254-1793.2018.07.03"
+  ],
+  "scope": "来源核对与编辑说明；不代表平台对全部事实作独立认证"
+}

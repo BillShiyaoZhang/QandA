@@ -1,0 +1,10 @@
+{
+  "schema_version": 1,
+  "id": "r-knowledge-20260908-p002",
+  "question_id": "q-knowledge-20260908-p002",
+  "body_path": "questions/q-knowledge-20260908-p002/revisions/r-knowledge-20260908-p002.md",
+  "body_sha256": "025086a0cd4c9e784d533ffc8ad7330788d144d13ec8f1e6162e01c77dd598ee",
+  "created_at": "2026-09-08T07:49:52.461Z",
+  "created_by": "github:BillShiyaoZhang",
+  "change_note": "恢复真实原始追问；显示标题经过整理"
+}

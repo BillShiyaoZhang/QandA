@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "id": "note-knowledge-20260908-p082",
+  "target_type": "answer",
+  "target_id": "a-knowledge-20260908-p082",
+  "kind": "note",
+  "body_path": "annotations/note-knowledge-20260908-p082.md",
+  "body_sha256": "b2cdbf7cb1c1f947811236226fd69719002d810ede26b638b55e1da60b36bd7e",
+  "author": "editor:Codex",
+  "created_at": "2026-09-08T07:49:52.461Z",
+  "evidence_urls": [
+    "https://arxiv.org/abs/2302.04761",
+    "https://qwen.readthedocs.io/en/v2.5/framework/function_call.html"
+  ],
+  "scope": "来源核对与编辑说明；不代表平台对全部事实作独立认证"
+}

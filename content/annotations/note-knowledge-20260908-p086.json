@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "id": "note-knowledge-20260908-p086",
+  "target_type": "answer",
+  "target_id": "a-knowledge-20260908-p086",
+  "kind": "note",
+  "body_path": "annotations/note-knowledge-20260908-p086.md",
+  "body_sha256": "f36ee67fe35d32369692b41361fc52322b58508035e97ecb24a10ad88c8d6e48",
+  "author": "editor:Codex",
+  "created_at": "2026-09-08T07:49:52.461Z",
+  "evidence_urls": [
+    "https://huggingface.co/docs/transformers/main/en/main_classes/tokenizer",
+    "https://qwenlm.github.io/blog/qwen3-embedding/"
+  ],
+  "scope": "来源核对与编辑说明；不代表平台对全部事实作独立认证"
+}

@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "id": "q-knowledge-20260908-p027",
+  "parent_answer_id": null,
+  "current_revision_id": "r-knowledge-20260908-p027",
+  "title": "能否评价每花一元钱，大模型完成了多少同等质量的有效工作？",
+  "tags": [
+    "人工智能",
+    "评测方法",
+    "成本效率"
+  ],
+  "created_at": "2026-09-08T07:49:52.461Z",
+  "created_by": "github:BillShiyaoZhang",
+  "state": "active",
+  "copied_from_question_id": null,
+  "is_example": false
+}
