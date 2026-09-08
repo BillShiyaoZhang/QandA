@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "id": "note-knowledge-20260908-p118",
+  "target_type": "answer",
+  "target_id": "a-knowledge-20260908-p118",
+  "kind": "note",
+  "body_path": "annotations/note-knowledge-20260908-p118.md",
+  "body_sha256": "2d01a3b637a43d604111365f07a3a92fcf60b0e3a7acc008a5da793056a97669",
+  "author": "editor:Codex",
+  "created_at": "2026-09-08T07:49:52.461Z",
+  "evidence_urls": [
+    "https://www.fsis.usda.gov/food-safety/safe-food-handling-and-preparation/food-safety-basics/leftovers-and-food-safety",
+    "https://www.fsis.usda.gov/food-safety/safe-food-handling-and-preparation/food-safety-basics/danger-zone-40f-140f",
+    "https://www.fda.gov/food/buy-store-serve-safe-food/refrigerator-thermometers-cold-facts-about-food-safety"
+  ],
+  "scope": "来源核对与编辑说明；不代表平台对全部事实作独立认证"
+}

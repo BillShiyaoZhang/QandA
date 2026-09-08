@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "id": "note-knowledge-20260908-p008",
+  "target_type": "answer",
+  "target_id": "a-knowledge-20260908-p008",
+  "kind": "note",
+  "body_path": "annotations/note-knowledge-20260908-p008.md",
+  "body_sha256": "e2332d7faf3bd8ddc1ccfb2c61ac198e9b811181579683e17c69333865a858e4",
+  "author": "editor:Codex",
+  "created_at": "2026-09-08T07:49:52.461Z",
+  "evidence_urls": [
+    "https://arxiv.org/abs/2301.10226",
+    "https://deepmind.google/blog/watermarking-ai-generated-text-and-video-with-synthid/",
+    "https://support.claude.com/zh-CN/articles/16266773-claude-如何标记-ai-生成的内容"
+  ],
+  "scope": "来源核对与编辑说明；不代表平台对全部事实作独立认证"
+}

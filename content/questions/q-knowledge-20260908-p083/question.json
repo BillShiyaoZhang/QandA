@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "id": "q-knowledge-20260908-p083",
+  "parent_answer_id": null,
+  "current_revision_id": "r-knowledge-20260908-p083",
+  "title": "不依赖平台的外部封装，模型本身能具备工具调用能力吗？",
+  "tags": [
+    "语言模型",
+    "工具调用",
+    "本地部署"
+  ],
+  "created_at": "2026-09-08T07:49:52.461Z",
+  "created_by": "github:BillShiyaoZhang",
+  "state": "active",
+  "copied_from_question_id": null,
+  "is_example": false
+}

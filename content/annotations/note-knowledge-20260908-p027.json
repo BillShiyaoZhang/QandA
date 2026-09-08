@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "id": "note-knowledge-20260908-p027",
+  "target_type": "answer",
+  "target_id": "a-knowledge-20260908-p027",
+  "kind": "note",
+  "body_path": "annotations/note-knowledge-20260908-p027.md",
+  "body_sha256": "25dc2165619bcfea6448acd6fdad5e4c68fe5e7c5d02f8b9eb6f1abc31652c73",
+  "author": "editor:Codex",
+  "created_at": "2026-09-08T07:49:52.461Z",
+  "evidence_urls": [
+    "https://arxiv.org/abs/2305.05176",
+    "https://github.com/SWE-bench/SWE-bench"
+  ],
+  "scope": "来源核对与编辑说明；不代表平台对全部事实作独立认证"
+}

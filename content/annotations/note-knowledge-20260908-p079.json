@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "id": "note-knowledge-20260908-p079",
+  "target_type": "answer",
+  "target_id": "a-knowledge-20260908-p079",
+  "kind": "note",
+  "body_path": "annotations/note-knowledge-20260908-p079.md",
+  "body_sha256": "b8bd8e6310c97b2b3285d77436fccda66c1b9e7ee9f5ae1c01b03d81da867e1d",
+  "author": "editor:Codex",
+  "created_at": "2026-09-08T07:49:52.461Z",
+  "evidence_urls": [
+    "https://nyncw.sh.gov.cn/zxfk/20180705/0009-55193.html",
+    "https://dict.revised.moe.edu.tw/dictView.jsp?ID=111834&la=0&powerMode=0",
+    "https://jgs.moa.gov.cn/gzdt/jgjdt/201312/t20131231_6296016.htm"
+  ],
+  "scope": "来源核对与编辑说明；不代表平台对全部事实作独立认证"
+}

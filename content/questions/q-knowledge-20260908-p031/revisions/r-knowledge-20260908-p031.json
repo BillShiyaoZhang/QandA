@@ -1,0 +1,10 @@
+{
+  "schema_version": 1,
+  "id": "r-knowledge-20260908-p031",
+  "question_id": "q-knowledge-20260908-p031",
+  "body_path": "questions/q-knowledge-20260908-p031/revisions/r-knowledge-20260908-p031.md",
+  "body_sha256": "778b1e5e3390512f8afe5bcf8b9b049e784d8b9a96fdb09d02774aec00b64352",
+  "created_at": "2026-09-08T07:49:52.461Z",
+  "created_by": "github:BillShiyaoZhang",
+  "change_note": "按原始问题意图整理为可独立阅读的知识提问；编辑范围见答案说明"
+}

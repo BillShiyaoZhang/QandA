@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "id": "q-knowledge-20260908-p002",
+  "parent_answer_id": "a-reproductive-original-chat-20260908",
+  "current_revision_id": "r-knowledge-20260908-p002",
+  "title": "生殖隔离能否定义物种？同一物种相隔很久的个体也可能生殖隔离吗？",
+  "tags": [
+    "生物学",
+    "物种",
+    "演化"
+  ],
+  "created_at": "2026-09-08T07:49:52.461Z",
+  "created_by": "github:BillShiyaoZhang",
+  "state": "active",
+  "copied_from_question_id": null,
+  "is_example": false
+}

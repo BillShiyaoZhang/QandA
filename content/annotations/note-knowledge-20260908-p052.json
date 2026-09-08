@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "id": "note-knowledge-20260908-p052",
+  "target_type": "answer",
+  "target_id": "a-knowledge-20260908-p052",
+  "kind": "note",
+  "body_path": "annotations/note-knowledge-20260908-p052.md",
+  "body_sha256": "240342d0cafd4e96c0b5a3a68e91643433d0368759cb04c3fe934d19b4435445",
+  "author": "editor:Codex",
+  "created_at": "2026-09-08T07:49:52.461Z",
+  "evidence_urls": [
+    "https://www.npc.gov.cn/rdxwzx/xwzx2026/xwzx2026019/202601/t20260116_451170.html",
+    "https://penelope.uchicago.edu/Thayer/E/Roman/Texts/Polybius/6%2A.html"
+  ],
+  "scope": "来源核对与编辑说明；不代表平台对全部事实作独立认证"
+}
