@@ -222,7 +222,9 @@ test('content paths cannot escape root or follow symlinks', (t) => {
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'qanda-path-'));
   t.after(() => fs.rmSync(tmp, { recursive: true, force: true }));
   assert.throws(() => safePath(tmp, '../secret'), /越界/);
-  fs.symlinkSync('/tmp', path.join(tmp, 'link'));
+  const target = path.join(tmp, 'target');
+  fs.mkdirSync(target);
+  fs.symlinkSync(target, path.join(tmp, 'link'), process.platform === 'win32' ? 'junction' : 'dir');
   assert.throws(() => safePath(tmp, 'link/secret'), /符号链接/);
 });
 test('twenty levels preserve a unique path', () => {

@@ -1,2 +1,5 @@
 # Auto detect text files and perform LF normalization
 * text=auto
+
+# Content hashes are calculated from the stored LF bytes on every platform.
+content/** text eol=lf

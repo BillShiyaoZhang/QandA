@@ -21,7 +21,7 @@ npm ci
 npm run dev -- --port 4321
 ```
 
-打开终端显示的本地地址。当前 Astro 版本会以后台服务方式运行开发服务器，使用 `npx astro dev status`、`npx astro dev logs` 和 `npx astro dev stop` 查看及停止服务。
+打开终端显示的本地地址。Astro 在代理环境或加上 `--background` 时会以后台服务方式运行开发服务器，使用 `npx astro dev status`、`npx astro dev logs` 和 `npx astro dev stop` 查看及停止服务。普通终端前台运行时使用 Ctrl+C 停止。
 
 ```sh
 npm run validate
@@ -34,6 +34,22 @@ npm run test:production
 ```
 
 在禁止写入全局偏好的环境中，可以设置 `ASTRO_TELEMETRY_DISABLED=1`。构建产物在 `dist/`，不写入 Git。页面内容来自 `content/`，没有数据库或 API 密钥。
+
+中文搜索需要构建产生的 Pagefind 索引；验证完整搜索体验时运行 `npm run build` 后使用 `npm run preview` 打开本地静态预览。`npm run dev` 用于源码开发，搜索页在未提供索引时会显示提示。
+
+Windows PowerShell 可用 `npm.cmd` 和 `npx.cmd`，避免本机执行策略阻止对应的 `.ps1` 脚本。环境变量用 `$env:变量名='值'` 设置。例如，将浏览器缓存放在项目内，并使用完整 Chromium 的无界面模式（无需另下载 Headless Shell）：
+
+```powershell
+$env:ASTRO_TELEMETRY_DISABLED='1'
+$env:PLAYWRIGHT_BROWSERS_PATH=Join-Path $PWD '.local/ms-playwright'
+$env:TEST_BROWSER_CHANNEL='chromium'
+npx.cmd playwright install chromium --no-shell
+npm.cmd run test:e2e -- site.spec.ts
+npm.cmd run build
+npm.cmd run test:production
+```
+
+`content/` 由 `.gitattributes` 固定为 LF 换行，正文哈希依赖这些原始字节；请勿让编辑器将其转换为 CRLF。浏览器测试的 GitHub 投稿跳转会被拦截，本地验收不会创建真实投稿。
 
 ## 浏览与管理
 
@@ -53,6 +69,8 @@ npm run test:production
 SITE_URL=https://billshiyaozhang.github.io SITE_BASE=/QandA npm run build
 TEST_BASE_PATH=/QandA npm run test:e2e -- site.spec.ts
 ```
+
+PowerShell 下可用 `$env:TEST_BASE_PATH='/QandA'; npm.cmd run test:e2e -- site.spec.ts` 验证隔离测试站点的子路径；结束后用 `Remove-Item Env:TEST_BASE_PATH` 恢复根路径测试。
 
 当前仓库为公开仓库，Pages 使用 GitHub Actions。标准 Ubuntu runner 对公开仓库免费，不依赖学生 Pro 权益、付费模型或额外服务器。自动化使用短期 `GITHUB_TOKEN`，不需要配置个人 PAT。
 

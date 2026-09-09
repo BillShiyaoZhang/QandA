@@ -1,4 +1,5 @@
 import fs from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
 import { createHash } from 'node:crypto';
 import { execFileSync } from 'node:child_process';
@@ -138,7 +139,7 @@ export function baselineFromGit(ref: string): Store {
     .trim()
     .split('\n')
     .filter(Boolean);
-  const temp = fs.mkdtempSync(path.join(process.env.TMPDIR || '/tmp', 'qanda-base-'));
+  const temp = fs.mkdtempSync(path.join(os.tmpdir(), 'qanda-base-'));
   try {
     for (const f of files) {
       const target = safePath(temp, f.replace(/^content\//, ''));

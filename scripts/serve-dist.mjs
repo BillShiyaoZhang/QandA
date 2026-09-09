@@ -3,7 +3,9 @@ import fs from 'node:fs';
 import path from 'node:path';
 const args = process.argv.slice(2),
   arg = (k) => args[args.indexOf(k) + 1];
-const root = fs.realpathSync(path.resolve(args.includes('--dir') ? arg('--dir') : 'dist')),
+const root = fs.realpathSync(
+    path.resolve(args.includes('--dir') ? arg('--dir') : process.env.TEST_DIST_DIR || 'dist'),
+  ),
   port = Number(args.includes('--port') ? arg('--port') : 4173),
   base = (process.env.TEST_BASE_PATH || '').replace(/\/$/, '');
 const types = {
